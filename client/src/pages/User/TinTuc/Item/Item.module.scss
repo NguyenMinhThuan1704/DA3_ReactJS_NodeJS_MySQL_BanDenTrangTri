@@ -1,0 +1,79 @@
+@import '../../../../components/GlobalStyles/Grid.module.scss';
+
+.new__product-item {
+    position: relative;
+    padding: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    background-color: #fff;
+    background-clip: content-box;
+    background-origin: content-box;
+
+    &:hover .new__product-img {
+        transform: scale(1.1);
+    }
+}
+
+.new__product-title::after {
+    content: '';
+    height: 1px;
+    width: 100%;
+    position: absolute;
+    bottom: 24px;
+    left: 0;
+    background: #ffbe00;
+    z-index: 0;
+}
+
+.new__product-img-wrapper {
+    width: 384px;
+    height: 232px;
+    overflow: hidden;
+
+    .new__product-img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.6s ease;
+    }
+}
+
+.product__title-name {
+    margin-top: 0.5rem;
+    font-size: 1.6rem;
+    margin: 10px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+
+    a {
+        color: #7d7d7d;
+        line-height: 1.6;
+    }
+}
+
+.title-h4 {
+    padding: 12px;
+
+    a {
+        padding-bottom: 12px;
+        font-size: 16px;
+        font-weight: 700;
+        color: #333;
+        border-bottom: 1px solid #e5e5e5;
+    }
+
+    &:hover a {
+        color: var(--primary-color);
+    }
+}
+
+.calendar {
+    padding: 0 12px;
+
+    .date {
+        padding-right: 6px;
+        color: #ea1d28;
+    }
+}

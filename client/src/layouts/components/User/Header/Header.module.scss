@@ -1,0 +1,143 @@
+@import '../../../../components/GlobalStyles/Grid.module.scss';
+
+.header {
+    height: 47px;
+    background-color: var(--white-color);
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 3px 8px;
+}
+
+.header__nav-list {
+    display: flex;
+    justify-content: center;
+}
+
+.header__nav-list li {
+    display: inline-block;
+}
+
+.header__nav-item {
+    font-size: 1.6rem;
+    font-weight: 700;
+    padding: 12px 26px;
+}
+
+.header__nav-item i {
+    margin-left: 5px;
+}
+
+.menu-item {
+    &.active {
+        color: var(--primary-color);
+    }
+}
+
+.header__nav-item:hover > a,
+.header__nav-item:hover > svg,
+.subnav li:hover > a,
+.subnav li:hover > svg,
+.subnav1 li:hover a {
+    color: var(--primary-color);
+}
+
+.header__nav-item:hover > i,
+.subnav li:hover i {
+    color: var(--primary-color);
+}
+
+.header__nav-item:hover {
+    cursor: pointer;
+}
+
+.header__nav-item a {
+    text-decoration: none;
+    color: #000;
+}
+
+.subnav-item a {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-item a {
+    padding-right: 6px;
+}
+
+.subnav-item,
+.menu-item {
+    position: relative;
+}
+
+.subnav-item:hover .subnav1,
+.menu-item:hover .subnav {
+    display: block;
+}
+
+.subnav {
+    display: none;
+    position: absolute;
+    background-color: var(--white-color);
+    font-weight: 400;
+    width: 235px;
+    right: -20px;
+    top: 99%;
+    border: 1px solid #ebebeb;
+    box-shadow: 1px 1px 7px 3px rgba(0, 0, 0, 0.15);
+    transform-origin: top;
+    animation: subnavGrowth ease-in 0.25s;
+    z-index: 5;
+}
+
+.subnav1 {
+    display: none;
+    position: absolute;
+    background-color: var(--white-color);
+    font-weight: 400;
+    width: 267px;
+    right: -115%;
+    top: -0.9px;
+    border: 1px solid #ebebeb;
+    box-shadow: 1px 1px 7px 3px rgba(0, 0, 0, 0.15);
+    transform-origin: top left;
+    animation: subnavGrowth ease-in 0.25s;
+}
+
+.subnav1 li,
+.subnav li {
+    height: 50px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #caccce;
+}
+
+.subnav1 li a,
+.subnav li a {
+    font-size: 1.5rem;
+    margin-left: 10px;
+}
+
+.subnav li i {
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.subnav1 li > a:before,
+.subnav li > a:before {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    content: '\f111';
+    font-size: 5px;
+    margin-right: 10px;
+    margin-top: -2px;
+    color: #ffbe00;
+}
+
+.nav_mb {
+    display: none;
+}
+
+.header__logo-close {
+    display: none;
+}

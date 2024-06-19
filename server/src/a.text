@@ -1,0 +1,456 @@
+use ban_den;
+
+-- THỐNG KÊ DOANH THU, SỐ ĐƠN HÀNG ĐÃ BÁN, SỐ SẢN PHẨM ĐÃ BÁN, SỐ ĐƠN HÀNG ĐÃ NHẬP, SỐ SẢN PHẨM ĐÃ NHẬP THEO NGÀY
+call GetDailyRevenue();
+-- DROP PROCEDURE IF EXISTS GetDailyRevenue;
+DELIMITER //
+CREATE PROCEDURE GetDailyRevenue()
+BEGIN
+    DECLARE NgayHienTai DATE;
+    DECLARE TongTienNhap DECIMAL(18, 0);
+    DECLARE TongTienBan DECIMAL(18, 0);
+    DECLARE SoDonHangBan INT;
+    DECLARE SoDonHangNhap INT;
+    DECLARE SoSanPhamNhap INT;
+    DECLARE SoSanPhamBan INT;
+    DECLARE DoanhThu DECIMAL(18, 0);
+
+    SET NgayHienTai = CURDATE();
+
+    -- Tính tổng tiền nhập hàng trong ngày
+    SELECT IFNULL(SUM(HDN.TongTien), 0)
+    INTO TongTienNhap
+    FROM HoaDonNhaps HDN
+    WHERE DATE(HDN.createdAt) = NgayHienTai;
+
+    -- Tính tổng tiền bán hàng trong ngày
+    SELECT IFNULL(SUM(HD.TongGia), 0)
+    INTO TongTienBan
+    FROM HoaDonBans HD
+    WHERE DATE(HD.createdAt) = NgayHienTai;
+
+    -- Đếm số đơn hàng bán được trong ngày
+    SELECT COUNT(*)
+    INTO SoDonHangBan
+    FROM HoaDonBans HD
+    WHERE DATE(HD.createdAt) = NgayHienTai;
+
+    -- Đếm số đơn hàng nhập trong ngày
+    SELECT COUNT(*)
+    INTO SoDonHangNhap
+    FROM HoaDonNhaps HDN
+    WHERE DATE(HDN.createdAt) = NgayHienTai;
+
+    -- Đếm số sản phẩm đã nhập trong ngày
+    SELECT IFNULL(SUM(SoLuongCTHDN), 0)
+    INTO SoSanPhamNhap
+    FROM ChiTietHoaDonNhaps CTHDN
+    INNER JOIN HoaDonNhaps HDN ON CTHDN.MaHoaDonNhap = HDN.id
+    WHERE DATE(HDN.createdAt) = NgayHienTai;
+
+    -- Đếm số sản phẩm đã bán trong ngày
+    SELECT IFNULL(SUM(SoLuongCTHDB), 0)
+    INTO SoSanPhamBan
+    FROM ChiTietHoaDonBans CTHD
+    INNER JOIN HoaDonBans HD ON CTHD.MaHoaDonBan = HD.id
+    WHERE DATE(HD.createdAt) = NgayHienTai;
+
+    -- Tính doanh thu
+    SET DoanhThu = TongTienBan - TongTienNhap;
+
+    -- Trả kết quả
+    SELECT DoanhThu, SoDonHangNhap, SoSanPhamNhap, SoDonHangBan, SoSanPhamBan;
+END //
+DELIMITER ;
+
+-- THỐNG KÊ DOANH THU, SỐ ĐƠN HÀNG ĐÃ BÁN, SỐ SẢN PHẨM ĐÃ BÁN, SỐ ĐƠN HÀNG ĐÃ NHẬP, SỐ SẢN PHẨM ĐÃ NHẬP THEO TUẦN
+call GetWeeklyRevenue();
+-- DROP PROCEDURE IF EXISTS GetWeeklyRevenue;
+DELIMITER //
+CREATE PROCEDURE GetWeeklyRevenue()
+BEGIN
+    DECLARE TuầnDau DATE;
+    DECLARE TuầnCuoi DATE;
+    DECLARE TongTienNhap DECIMAL(18, 0);
+    DECLARE TongTienBan DECIMAL(18, 0);
+    DECLARE SoDonHangBan INT;
+    DECLARE SoDonHangNhap INT;
+    DECLARE SoSanPhamNhap INT;
+    DECLARE SoSanPhamBan INT;
+    DECLARE DoanhThu DECIMAL(18, 0);
+
+    SET TuầnDau = DATE_ADD(CURDATE(), INTERVAL -WEEKDAY(CURDATE()) DAY);
+    SET TuầnCuoi = DATE_ADD(TuầnDau, INTERVAL 6 DAY);
+
+    -- Tính tổng tiền nhập hàng trong tuần
+    SELECT IFNULL(SUM(HDN.TongTien), 0)
+    INTO TongTienNhap
+    FROM HoaDonNhaps HDN
+    WHERE HDN.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Tính tổng tiền bán hàng trong tuần
+    SELECT IFNULL(SUM(HD.TongGia), 0)
+    INTO TongTienBan
+    FROM HoaDonBans HD
+    WHERE HD.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Đếm số đơn hàng bán được trong tuần
+    SELECT COUNT(*)
+    INTO SoDonHangBan
+    FROM HoaDonBans HD
+    WHERE HD.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Đếm số đơn hàng nhập trong tuần
+    SELECT COUNT(*)
+    INTO SoDonHangNhap
+    FROM HoaDonNhaps HDN
+    WHERE HDN.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Đếm số sản phẩm đã nhập trong tuần
+    SELECT IFNULL(SUM(SoLuongCTHDN), 0)
+    INTO SoSanPhamNhap
+    FROM ChiTietHoaDonNhaps CTHDN
+    INNER JOIN HoaDonNhaps HDN ON CTHDN.MaHoaDonNhap = HDN.id
+    WHERE HDN.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Đếm số sản phẩm đã bán trong tuần
+    SELECT IFNULL(SUM(SoLuongCTHDB), 0)
+    INTO SoSanPhamBan
+    FROM ChiTietHoaDonBans CTHD
+    INNER JOIN HoaDonBans HD ON CTHD.MaHoaDonBan = HD.id
+    WHERE HD.createdAt BETWEEN TuầnDau AND TuầnCuoi;
+
+    -- Tính doanh thu
+    SET DoanhThu = TongTienBan - TongTienNhap;
+
+    -- Trả kết quả
+    SELECT DoanhThu, SoDonHangNhap, SoSanPhamNhap, SoDonHangBan, SoSanPhamBan;
+END //
+DELIMITER ;
+
+
+-- THỐNG KÊ DOANH THU, SỐ ĐƠN HÀNG ĐÃ BÁN, SỐ SẢN PHẨM ĐÃ BÁN, SỐ ĐƠN HÀNG ĐÃ NHẬP, SỐ SẢN PHẨM ĐÃ NHẬP THEO THÁNG
+call GetMonthlyRevenue();
+-- DROP PROCEDURE IF EXISTS GetMonthlyRevenue;
+DELIMITER //
+CREATE PROCEDURE GetMonthlyRevenue()
+BEGIN
+    DECLARE ThangDau DATETIME;
+    DECLARE ThangCuoi DATETIME;
+    DECLARE TongTienNhap DECIMAL(18, 0);
+    DECLARE TongTienBan DECIMAL(18, 0);
+    DECLARE SoDonHangBan INT;
+    DECLARE SoDonHangNhap INT;
+    DECLARE SoSanPhamNhap INT;
+    DECLARE SoSanPhamBan INT;
+    DECLARE DoanhThu DECIMAL(18, 0);
+
+    SET ThangDau = LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) + INTERVAL 1 DAY;
+    SET ThangCuoi = LAST_DAY(CURDATE());
+
+    -- Tính tổng tiền nhập hàng trong tháng
+    SELECT IFNULL(SUM(HDN.TongTien), 0)
+    INTO TongTienNhap
+    FROM HoaDonNhaps HDN
+    WHERE HDN.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Tính tổng tiền bán hàng trong tháng
+    SELECT IFNULL(SUM(HD.TongGia), 0)
+    INTO TongTienBan
+    FROM HoaDonBans HD
+    WHERE HD.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Đếm số đơn hàng bán được trong tháng
+    SELECT COUNT(*)
+    INTO SoDonHangBan
+    FROM HoaDonBans HD
+    WHERE HD.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Đếm số đơn hàng nhập trong tháng
+    SELECT COUNT(*)
+    INTO SoDonHangNhap
+    FROM HoaDonNhaps HDN
+    WHERE HDN.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Đếm số sản phẩm đã nhập trong tháng
+    SELECT IFNULL(SUM(SoLuongCTHDN), 0)
+    INTO SoSanPhamNhap
+    FROM ChiTietHoaDonNhaps CTHDN
+    INNER JOIN HoaDonNhaps HDN ON CTHDN.MaHoaDonNhap = HDN.id
+    WHERE HDN.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Đếm số sản phẩm đã bán trong tháng
+    SELECT IFNULL(SUM(SoLuongCTHDB), 0)
+    INTO SoSanPhamBan
+    FROM ChiTietHoaDonBans CTHD
+    INNER JOIN HoaDonBans HD ON CTHD.MaHoaDonBan = HD.id
+    WHERE HD.createdAt BETWEEN ThangDau AND ThangCuoi;
+
+    -- Tính doanh thu
+    SET DoanhThu = TongTienBan - TongTienNhap;
+
+    -- Trả kết quả
+    SELECT DoanhThu, SoDonHangNhap, SoSanPhamNhap, SoDonHangBan, SoSanPhamBan;
+END //
+DELIMITER ;
+
+-- THỐNG KÊ DOANH THU, SỐ ĐƠN HÀNG ĐÃ BÁN, SỐ SẢN PHẨM ĐÃ BÁN, SỐ ĐƠN HÀNG ĐÃ NHẬP, SỐ SẢN PHẨM ĐÃ NHẬP THEO NĂM
+call GetYearlyRevenue();
+-- DROP PROCEDURE IF EXISTS GetYearlyRevenue;
+DELIMITER //
+CREATE PROCEDURE GetYearlyRevenue()
+BEGIN
+    DECLARE NamHienTai YEAR;
+    DECLARE TongTienNhap DECIMAL(18, 0);
+    DECLARE TongTienBan DECIMAL(18, 0);
+    DECLARE SoDonHangBan INT;
+    DECLARE SoDonHangNhap INT;
+    DECLARE SoSanPhamNhap INT;
+    DECLARE SoSanPhamBan INT;
+    DECLARE DoanhThu DECIMAL(18, 0);
+
+    SET NamHienTai = YEAR(CURDATE());
+
+    -- Tính tổng tiền nhập hàng trong năm
+    SELECT IFNULL(SUM(HDN.TongTien), 0)
+    INTO TongTienNhap
+    FROM HoaDonNhaps HDN
+    WHERE YEAR(HDN.createdAt) = NamHienTai;
+
+    -- Tính tổng tiền bán hàng trong năm
+    SELECT IFNULL(SUM(HD.TongGia), 0)
+    INTO TongTienBan
+    FROM HoaDonBans HD
+    WHERE YEAR(HD.createdAt) = NamHienTai;
+
+    -- Đếm số đơn hàng bán được trong năm
+    SELECT COUNT(*)
+    INTO SoDonHangBan
+    FROM HoaDonBans HD
+    WHERE YEAR(HD.createdAt) = NamHienTai;
+
+    -- Đếm số đơn hàng nhập trong năm
+    SELECT COUNT(*)
+    INTO SoDonHangNhap
+    FROM HoaDonNhaps HDN
+    WHERE YEAR(HDN.createdAt) = NamHienTai;
+
+    -- Đếm số sản phẩm đã nhập trong năm
+    SELECT IFNULL(SUM(SoLuongCTHDN), 0)
+    INTO SoSanPhamNhap
+    FROM ChiTietHoaDonNhaps CTHDN
+    INNER JOIN HoaDonNhaps HDN ON CTHDN.MaHoaDonNhap = HDN.id
+    WHERE YEAR(HDN.createdAt) = NamHienTai;
+
+    -- Đếm số sản phẩm đã bán trong năm
+    SELECT IFNULL(SUM(SoLuongCTHDB), 0)
+    INTO SoSanPhamBan
+    FROM ChiTietHoaDonBans CTHD
+    INNER JOIN HoaDonBans HD ON CTHD.MaHoaDonBan = HD.id
+    WHERE YEAR(HD.createdAt) = NamHienTai;
+
+    -- Tính doanh thu
+    SET DoanhThu = TongTienBan - TongTienNhap;
+
+    -- Trả kết quả
+    SELECT DoanhThu, SoDonHangNhap, SoSanPhamNhap, SoDonHangBan, SoSanPhamBan;
+END //
+DELIMITER ;
+
+
+DELIMITER //
+CREATE PROCEDURE sp_LaySanPhamTheoChucNang(
+    IN ChucNang INT
+)
+BEGIN
+    IF ChucNang = 1 THEN
+        -- Lấy sản phẩm bán chạy nhất
+        SELECT sp.*, SUM(CTHD.SoLuongCTHDB) AS TongSoLuongBan, COUNT(DISTINCT CTHD.MaHoaDonBan) AS SoDonDatHang
+        FROM SanPhams sp
+        JOIN ChiTietHoaDonBans CTHD ON sp.id = CTHD.MaSanPham
+        GROUP BY sp.id, sp.MaLoaiSanPham, sp.TenSanPham, sp.AnhDaiDien, sp.Gia, sp.GiaGiam, sp.SoLuong
+        ORDER BY SUM(CTHD.SoLuongCTHDB) DESC
+        LIMIT 4;
+    ELSEIF ChucNang = 2 THEN
+        -- Lấy sản phẩm có nhiều đơn đặt hàng nhất
+        SELECT sp.*, SUM(CTHD.SoLuongCTHDB) AS TongSoLuongBan, COUNT(DISTINCT CTHD.MaHoaDonBan) AS SoDonDatHang
+        FROM SanPhams sp
+        JOIN ChiTietHoaDonBans CTHD ON sp.id = CTHD.MaSanPham
+        GROUP BY sp.id, sp.MaLoaiSanPham, sp.TenSanPham, sp.AnhDaiDien, sp.Gia, sp.GiaGiam, sp.SoLuong
+        ORDER BY COUNT(DISTINCT CTHD.MaHoaDonBan) DESC
+        LIMIT 4;
+    ELSEIF ChucNang = 3 THEN
+        -- Lấy sản phẩm có giá thấp nhất
+        SELECT *
+        FROM SanPhams
+        ORDER BY Gia
+        LIMIT 4;
+    ELSEIF ChucNang = 4 THEN
+        -- Lấy sản phẩm mới nhất dựa trên ngày tạo Hóa Đơn Nhập
+        SELECT sp.*
+        FROM SanPhams sp
+        JOIN ChiTietHoaDonNhaps CTHDN ON sp.id = CTHDN.MaSanPham
+        JOIN HoaDonNhap HDN ON CTHDN.MaHoaDonNhap = HDN.MaHoaDonNhap
+        ORDER BY HDN.created_at DESC
+        LIMIT 4;
+	ELSEIF ChucNang = 5 THEN
+        -- Lấy sản phẩm mới nhất dựa trên ngày tạo tạo sản phẩm
+        SELECT sp.*
+        FROM SanPhams sp
+        ORDER BY sp.created_at DESC
+        LIMIT 4;
+    ELSE
+        SELECT 'Chức năng không hợp lệ.';
+    END IF;
+END //
+DELIMITER ;
+
+call sp_LaySanPhamTheoChucNang(1);
+call sp_LaySanPhamTheoChucNang(4);
+call sp_LaySanPhamTheoChucNang(5);
+
+DROP PROCEDURE IF EXISTS sp_LaySanPhamTheoChucNang;
+
+use banden;
+CALL sp_hoadonnhap_thong_ke(3, 2, '2024-04-04 07:16:19', '2024-04-10 07:16:19');
+CALL sp_hoadonnhap_thong_ke(0, 0, '2024-04-05 09:51:56', '2024-04-09 23:50:32');
+CALL sp_hoadonnhap_thong_ke(0, 0, '2024-04-05', '2024-04-09');
+CALL sp_hoadonnhap_thong_ke(3, 11, '2024-04-05', '2024-04-09');
+CALL sp_hoadonnhap_thong_ke(0, 0, '2024-04-10', '2024-04-13');
+-- DROP PROCEDURE IF EXISTS sp_hoadonnhap_thong_ke;
+
+DELIMITER $$
+CREATE PROCEDURE sp_hoadonnhap_thong_ke (
+    IN ma_nv INT,
+    IN ma_npp INT,
+    IN fr_NgayTao DATE,
+    IN to_NgayTao DATE
+)
+BEGIN
+    -- Tạo một bảng tạm thời để lưu kết quả truy vấn
+    CREATE TEMPORARY TABLE IF NOT EXISTS TempResults (
+        id INT,
+        TaiKhoan VARCHAR(255),
+        MaNhaPhanPhoi INT,
+        TenNhaPhanPhoi VARCHAR(255),
+        MaSanPham INT,
+        TenSanPham VARCHAR(255),
+        SoLuongCTHDN INT,
+        TongTienCTHDN DECIMAL(18,2),
+        createdAt DATETIME,
+        KieuThanhToan VARCHAR(255)
+    );
+
+    -- Thực hiện truy vấn và lưu kết quả vào bảng tạm thời
+    INSERT INTO TempResults (
+        id,
+        TaiKhoan,
+        MaNhaPhanPhoi,
+        TenNhaPhanPhoi,
+        MaSanPham,
+        TenSanPham,
+        SoLuongCTHDN,
+        TongTienCTHDN,
+        createdAt,
+        KieuThanhToan
+    )
+    SELECT 
+        tk.id,
+        tk.TaiKhoan,
+        npp.MaNhaPhanPhoi,
+        npp.TenNhaPhanPhoi,
+        s.MaSanPham,
+        s.TenSanPham,
+        c.SoLuongCTHDN,
+        c.TongTienCTHDN,
+        h.createdAt,
+        h.KieuThanhToan
+    FROM 
+        HoaDonNhaps h
+    INNER JOIN 
+        ChiTietHoaDonNhaps c ON c.MaHoaDonNhap = h.id
+    INNER JOIN 
+        SanPhams s ON s.id = c.MaSanPham
+    INNER JOIN 
+        TaiKhoans tk ON tk.id = h.MaTaiKhoan
+    INNER JOIN 
+        NhaPhanPhois npp ON npp.id = h.MaNhaPhanPhoi
+    WHERE 
+        (ma_nv = 0 OR h.MaTaiKhoan = ma_nv)
+        AND (ma_npp = 0 OR h.MaNhaPhanPhoi = ma_npp)
+        AND (
+            (fr_NgayTao IS NULL AND to_NgayTao IS NULL) 
+            OR (fr_NgayTao IS NOT NULL AND to_NgayTao IS NULL AND h.createdAt >= fr_NgayTao)
+            OR (fr_NgayTao IS NULL AND to_NgayTao IS NOT NULL AND h.createdAt <= to_NgayTao)
+            OR (h.createdAt BETWEEN fr_NgayTao AND to_NgayTao)
+        );
+
+    -- Lựa chọn tất cả dữ liệu từ bảng tạm thời và hiển thị nó
+    SELECT * FROM TempResults;
+
+    -- Xóa bảng tạm thời
+    DROP TEMPORARY TABLE IF EXISTS TempResults;
+END$$
+DELIMITER ;
+
+
+-- Hóa đơn bán
+CALL sp_hoadonban_thong_ke('Nguyễn Minh Thuận', '2024-04-03', '2024-04-05');
+CALL sp_hoadonban_thong_ke('', '2024-04-03', '2024-04-05');
+DELIMITER $$
+CREATE PROCEDURE sp_hoadonban_thong_ke (
+    IN ten_khach NVARCHAR(100),
+    IN fr_NgayTao DATE,
+    IN to_NgayTao DATE
+)
+BEGIN
+    -- Tạo một bảng tạm thời để lưu kết quả truy vấn
+    CREATE TEMPORARY TABLE IF NOT EXISTS TempResults (
+		MaSanPham INT,
+		TenSanPham VARCHAR(255),
+		SoLuongCTHDB INT,
+		TongGia DECIMAL(18,2),
+		createdAt DATETIME,
+		TenKH VARCHAR(255),
+		DiaChi VARCHAR(255)
+	);
+
+	-- Thực hiện truy vấn và lưu kết quả vào bảng tạm thời
+	INSERT INTO TempResults (
+		MaSanPham,
+		TenSanPham,
+		SoLuongCTHDB,
+		TongGia,
+		createdAt,
+		TenKH,
+		DiaChi
+	)
+    SELECT 
+        s.MaSanPham,
+		s.TenSanPham,
+		c.SoLuongCTHDB,
+		c.TongGia,
+		h.createdAt,
+		h.TenKH,
+		h.DiaChi
+	FROM
+		HoaDon h
+	INNER JOIN ChiTietHoaDon c ON c.MaHoaDon = h.MaHoaDon
+	INNER JOIN SanPham s ON s.MaSanPham = c.MaSanPham
+    WHERE 
+        (ten_khach = '' OR h.TenKH LIKE CONCAT('%', ten_khach, '%'))
+        AND (
+            (fr_NgayTao IS NULL AND to_NgayTao IS NULL) 
+            OR (fr_NgayTao IS NOT NULL AND to_NgayTao IS NULL AND h.createdAt >= fr_NgayTao)
+            OR (fr_NgayTao IS NULL AND to_NgayTao IS NOT NULL AND h.createdAt <= to_NgayTao)
+            OR (h.createdAt BETWEEN fr_NgayTao AND to_NgayTao)
+        );
+
+    -- Lựa chọn tất cả dữ liệu từ bảng tạm thời và hiển thị nó
+    SELECT * FROM TempResults;
+
+    -- Xóa bảng tạm thời
+    DROP TEMPORARY TABLE IF EXISTS TempResults;
+END$$
+DELIMITER ;
+

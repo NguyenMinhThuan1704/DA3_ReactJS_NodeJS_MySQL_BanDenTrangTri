@@ -1,0 +1,15 @@
+.menu-item {
+    &.active {
+        button {
+            background-color: #ddd !important;
+            border-right: 1px solid #ffbe00 !important;
+        }
+    }
+
+    &:hover {
+        button {
+            background-color: #ddd !important;
+            border-right: 1px solid #ffbe00 !important;
+        }
+    }
+}

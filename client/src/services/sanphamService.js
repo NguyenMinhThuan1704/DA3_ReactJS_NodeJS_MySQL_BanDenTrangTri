@@ -49,6 +49,25 @@ const getProcMonth = async () => {
 const getProcYear = async () => {
     return await httpRequest.get('/sanphams/callProcYear');
 };
+const apiUploadImages = (images) =>
+    new Promise(async (resolve, reject) => {
+        try {
+            // const response = await axios({
+            //     method: 'post',
+            //     url: `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
+            //     data: images,
+            // });
+            const response = await httpRequest.post(
+                // `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
+                `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
+                images,
+                {},
+            );
+            resolve(response);
+        } catch (error) {
+            reject(error);
+        }
+    });
 
 const postTKSP = async (data) => {
     return await httpRequest.post('/sanphams/callTKSP', data, {});
@@ -99,6 +118,7 @@ const sanphamService = {
     getProcMonth,
     getProcYear,
     postTKSP,
+    apiUploadImages,
 };
 
 export default sanphamService;

@@ -4,7 +4,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import GlobalStyles from '~/components/GlobalStyles';
-import ScrollToTop from './components/ScrollToTop';
+// import ScrollToTop from './components/ScrollToTop';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

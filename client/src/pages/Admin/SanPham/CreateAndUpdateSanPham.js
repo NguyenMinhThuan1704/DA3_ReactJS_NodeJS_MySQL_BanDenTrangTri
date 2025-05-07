@@ -1,18 +1,27 @@
 import { useEffect, useRef, useState } from 'react';
 import { Form, Button, Modal } from 'react-bootstrap';
 import { useSearchParams } from 'react-router-dom';
+import { BsCameraFill } from 'react-icons/bs';
+import { ImBin } from 'react-icons/im';
+import Loading from '../../../components/Loading/Loading';
+import Image from '../../../components/Image';
 import loaispService from './../../../services/loaispService';
+import sanphamService from './../../../services/sanphamService';
 
 function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
     const formRef = useRef();
 
     const [validated, setValidated] = useState(false);
 
+    const [isLoading, setIsLoading] = useState(false);
+    // const [imagesPreview, setImagesPreview] = useState([]);
+
     const [searchParams] = useSearchParams();
 
     const [loaisanphams, setLoaiSanPhams] = useState({ rows: [], count: 0 });
 
-    const [previewImage, setPreviewImage] = useState('');
+    // const [previewImage, setPreviewImage] = useState('');
+    const [previewImage, setPreviewImage] = useState([]);
 
     const [data, setData] = useState({
         id: 0,
@@ -23,6 +32,13 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
         GiaGiam: '',
         SoLuong: '',
     });
+
+    useEffect(() => {
+        if (data) {
+            let images = data?.images?.image ? JSON.parse(data?.images?.image) : [];
+            images && setPreviewImage(images);
+        }
+    }, [data]);
 
     useEffect(() => {
         if (dataRaw) {
@@ -58,6 +74,33 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    const handleFiles = async (e) => {
+        e.stopPropagation();
+        setIsLoading(true);
+        let images = [];
+        let files = e.target.files;
+        const folder = 'ecommerce_decorative_lights';
+
+        let formData = new FormData();
+        for (let i of files) {
+            formData.append('file', i);
+            formData.append('upload_preset', process.env.REACT_APP_UPLOAD_PRESETS);
+            formData.append('folder', folder);
+            let response = await sanphamService.apiUploadImages(formData);
+            if (response.status === 200) images = [...images, response.data?.secure_url];
+        }
+        setIsLoading(false);
+        setPreviewImage((prev) => [...prev, ...images]);
+        setData((prev) => ({ ...prev, images: [...prev.images, ...images] }));
+    };
+    const handleDeleteImage = (image) => {
+        setPreviewImage((prev) => prev?.filter((item) => item !== image));
+        setData((prev) => ({
+            ...prev,
+            images: prev.images?.filter((item) => item !== image),
+        }));
+    };
 
     const handleChange = (e) => {
         const target = e.target;
@@ -137,7 +180,7 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                         />
                         <Form.Control.Feedback type="invalid">Vui lòng nhập tên sản phẩm.</Form.Control.Feedback>
                     </Form.Group>
-                    <Form.Group className="mb-3">
+                    {/* <Form.Group className="mb-3">
                         <Form.Label>Ảnh đại diện:</Form.Label>
                         <Form.Control
                             name={`sanpham${data.id}` || ''}
@@ -155,7 +198,52 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                                 style={{ display: 'block', marginTop: '10px', maxWidth: 200 }}
                             />
                         )}
-                    </Form.Group>
+                    </Form.Group> */}
+                    <div className="w-full mb-6">
+                        <h2 className="font-semibold text-xl py-4">Hình ảnh</h2>
+                        <div className="w-full">
+                            <label
+                                className="w-full border-2 h-[200px] my-4 gap-4 flex flex-col items-center justify-center border-gray-400 border-dashed rounded-md"
+                                htmlFor="file"
+                            >
+                                {isLoading ? (
+                                    <Loading />
+                                ) : (
+                                    <div className="flex flex-col items-center justify-center">
+                                        <BsCameraFill color="blue" size={50} />
+                                        Thêm ảnh
+                                    </div>
+                                )}
+                            </label>
+                            <input onChange={handleFiles} hidden type="file" id="file" multiple />
+                            <div className="w-full">
+                                <h3 className="font-medium py-4">Ảnh đã chọn</h3>
+                                <div className="flex gap-4 items-center">
+                                    {/* {previewImage?.map((item) => {
+                                        return ( */}
+                                    <div
+                                        key={data.AnhDaiDien}
+                                        className="relative w-1/3 h-1/3 border border-solid rounded-3xl shadow-md"
+                                    >
+                                        <Image
+                                            src={data.AnhDaiDien}
+                                            alt="preview"
+                                            className="w-full h-full rounded-3xl shadow-md"
+                                        />
+                                        <span
+                                            title="Xóa"
+                                            onClick={() => handleDeleteImage(data.AnhDaiDien)}
+                                            className="absolute top-0 right-0 p-2 cursor-pointer bg-gray-300 hover:bg-gray-400 rounded-full"
+                                        >
+                                            <ImBin />
+                                        </span>
+                                    </div>
+                                    {/* );
+                                    })} */}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <Form.Group className="mb-3">
                         <Form.Label>Giá:</Form.Label>
                         <Form.Control

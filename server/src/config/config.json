@@ -1,7 +1,7 @@
 {
   "development": {
     "username": "root",
-    "password": "01697062301",
+    "password": "170423",
     "database": "banden",
     "host": "127.0.0.1",
     "dialect": "mysql",

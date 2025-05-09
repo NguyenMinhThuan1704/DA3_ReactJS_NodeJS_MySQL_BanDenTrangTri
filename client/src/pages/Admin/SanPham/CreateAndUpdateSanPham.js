@@ -10,136 +10,136 @@ import sanphamService from './../../../services/sanphamService';
 
 function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
     const formRef = useRef();
-
     const [validated, setValidated] = useState(false);
-
     const [isLoading, setIsLoading] = useState(false);
-    // const [imagesPreview, setImagesPreview] = useState([]);
-
     const [searchParams] = useSearchParams();
-
     const [loaisanphams, setLoaiSanPhams] = useState({ rows: [], count: 0 });
 
-    // const [previewImage, setPreviewImage] = useState('');
+    // previewImage sẽ là mảng URL
     const [previewImage, setPreviewImage] = useState([]);
 
+    // data.AnhDaiDien cũng luôn là mảng URL
     const [data, setData] = useState({
         id: 0,
         MaLoaiSanPham: '',
         TenSanPham: '',
-        AnhDaiDien: '',
+        AnhDaiDien: [],
         Gia: '',
         GiaGiam: '',
         SoLuong: '',
     });
 
+    // load danh sách loại sản phẩm
     useEffect(() => {
-        if (data) {
-            let images = data?.images?.image ? JSON.parse(data?.images?.image) : [];
-            images && setPreviewImage(images);
+        const page = Number(searchParams.get('page'));
+        if (page > 0) {
+            loaispService.getCategoryAll({ page }).then((res) => {
+                setLoaiSanPhams(res.data.data);
+            });
         }
-    }, [data]);
+    }, [searchParams]);
 
+    // khi dataRaw thay đổi, parse AnhDaiDien thành mảng
     useEffect(() => {
         if (dataRaw) {
+            const existingImages = Array.isArray(dataRaw.AnhDaiDien)
+                ? dataRaw.AnhDaiDien
+                : dataRaw.AnhDaiDien
+                ? JSON.parse(dataRaw.AnhDaiDien)
+                : [];
+
             setData({
-                id: dataRaw?.id ?? 0,
-                MaLoaiSanPham: dataRaw?.MaLoaiSanPham ?? '',
-                TenSanPham: dataRaw?.TenSanPham ?? '',
-                AnhDaiDien: dataRaw?.AnhDaiDien ?? '',
-                Gia: dataRaw?.Gia ?? '',
-                GiaGiam: dataRaw?.GiaGiam ?? '',
-                SoLuong: dataRaw?.SoLuong ?? '',
+                id: dataRaw.id ?? 0,
+                MaLoaiSanPham: dataRaw.MaLoaiSanPham ?? '',
+                TenSanPham: dataRaw.TenSanPham ?? '',
+                AnhDaiDien: existingImages,
+                Gia: dataRaw.Gia ?? '',
+                GiaGiam: dataRaw.GiaGiam ?? '',
+                SoLuong: dataRaw.SoLuong ?? '',
             });
-            setPreviewImage(dataRaw.AnhDaiDien ?? '');
+            setPreviewImage(existingImages);
         } else {
+            // reset về mặc định
             setData({
                 id: 0,
                 MaLoaiSanPham: '',
                 TenSanPham: '',
-                AnhDaiDien: '',
+                AnhDaiDien: [],
                 Gia: '',
                 GiaGiam: '',
                 SoLuong: '',
             });
-            setPreviewImage('');
+            setPreviewImage([]);
         }
     }, [dataRaw]);
 
-    useEffect(() => {
-        if (Number(searchParams.get('page')) > 0) {
-            loaispService.getCategoryAll({ page: Number(searchParams.get('page')) }).then((res) => {
-                setLoaiSanPhams(res.data.data);
-            });
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
+    // upload nhiều file lên Cloudinary, nối thêm vào cả preview và data.AnhDaiDien
     const handleFiles = async (e) => {
         e.stopPropagation();
         setIsLoading(true);
-        let images = [];
-        let files = e.target.files;
+        const files = Array.from(e.target.files);
         const folder = 'ecommerce_decorative_lights';
+        const uploaded = [];
 
-        let formData = new FormData();
-        for (let i of files) {
-            formData.append('file', i);
+        for (const file of files) {
+            const formData = new FormData();
+            formData.append('file', file);
             formData.append('upload_preset', process.env.REACT_APP_UPLOAD_PRESETS);
             formData.append('folder', folder);
-            let response = await sanphamService.apiUploadImages(formData);
-            if (response.status === 200) images = [...images, response.data?.secure_url];
+            const resp = await sanphamService.apiUploadImages(formData);
+            if (resp.status === 200 && resp.data.secure_url) {
+                uploaded.push(resp.data.secure_url);
+            }
         }
+
         setIsLoading(false);
-        setPreviewImage((prev) => [...prev, ...images]);
-        setData((prev) => ({ ...prev, images: [...prev.images, ...images] }));
-    };
-    const handleDeleteImage = (image) => {
-        setPreviewImage((prev) => prev?.filter((item) => item !== image));
+        setPreviewImage((prev) => [...prev, ...uploaded]);
         setData((prev) => ({
             ...prev,
-            images: prev.images?.filter((item) => item !== image),
+            AnhDaiDien: [...prev.AnhDaiDien, ...uploaded],
+        }));
+    };
+
+    const handleDeleteImage = (url) => {
+        setPreviewImage((prev) => prev.filter((u) => u !== url));
+        setData((prev) => ({
+            ...prev,
+            AnhDaiDien: prev.AnhDaiDien.filter((u) => u !== url),
         }));
     };
 
     const handleChange = (e) => {
-        const target = e.target;
-        const { name, value, files } = target;
-
-        if (name.startsWith('sanpham') && files[0]) {
-            const file = files[0];
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const filePath = `./../../assets/img/Product/${file.name}`;
-                setPreviewImage(e.target.result);
-                setData((prev) => ({ ...prev, AnhDaiDien: filePath }));
-            };
-            reader.readAsDataURL(file);
-        } else {
-            setData((prev) => ({ ...prev, [name]: value }));
-        }
+        const { name, value } = e.target;
+        setData((prev) => ({ ...prev, [name]: value }));
     };
 
     const handleSave = (e) => {
         e.preventDefault();
-
         if (formRef.current.checkValidity() === false) {
             e.stopPropagation();
             setValidated(true);
-        } else {
-            onSave(data, dataRaw ? 'update' : 'create');
-            setData({
-                id: 0,
-                MaLoaiSanPham: '',
-                TenSanPham: '',
-                AnhDaiDien: '',
-                Gia: '',
-                GiaGiam: '',
-                SoLuong: '',
-            });
-            setPreviewImage('');
-            setValidated(false);
+            return;
         }
+
+        const payloadToSave = {
+            ...data,
+            AnhDaiDien: JSON.stringify(data.AnhDaiDien),
+        };
+
+        onSave(payloadToSave, dataRaw ? 'update' : 'create');
+
+        // reset form
+        setData({
+            id: 0,
+            MaLoaiSanPham: '',
+            TenSanPham: '',
+            AnhDaiDien: [],
+            Gia: '',
+            GiaGiam: '',
+            SoLuong: '',
+        });
+        setPreviewImage([]);
+        setValidated(false);
     };
 
     return (
@@ -149,6 +149,7 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
             </Modal.Header>
             <Modal.Body>
                 <Form noValidate validated={validated} ref={formRef}>
+                    {/* Loại sản phẩm */}
                     <Form.Group className="mb-3">
                         <Form.Label>Loại sản phẩm:</Form.Label>
                         <Form.Control
@@ -156,7 +157,6 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                             value={data.MaLoaiSanPham}
                             name="MaLoaiSanPham"
                             required
-                            autoFocus
                             onChange={handleChange}
                         >
                             <option value=""> - Chọn loại sản phẩm - </option>
@@ -168,6 +168,8 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                         </Form.Control>
                         <Form.Control.Feedback type="invalid">Vui lòng chọn loại sản phẩm.</Form.Control.Feedback>
                     </Form.Group>
+
+                    {/* Tên sản phẩm */}
                     <Form.Group className="mb-3">
                         <Form.Label>Tên sản phẩm:</Form.Label>
                         <Form.Control
@@ -180,70 +182,50 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                         />
                         <Form.Control.Feedback type="invalid">Vui lòng nhập tên sản phẩm.</Form.Control.Feedback>
                     </Form.Group>
-                    {/* <Form.Group className="mb-3">
-                        <Form.Label>Ảnh đại diện:</Form.Label>
-                        <Form.Control
-                            name={`sanpham${data.id}` || ''}
-                            type="file"
-                            placeholder="Chọn ảnh đại diện"
-                            required={!dataRaw}
-                            onChange={handleChange}
-                        />
-                        <Form.Control.Feedback type="invalid">Vui lòng chọn ảnh đại diện.</Form.Control.Feedback>
-                        {(data.AnhDaiDien || previewImage) && (
-                            <img
-                                id="previewImage"
-                                src={previewImage || data.AnhDaiDien}
-                                alt="Preview"
-                                style={{ display: 'block', marginTop: '10px', maxWidth: 200 }}
-                            />
-                        )}
-                    </Form.Group> */}
+
+                    {/* Hình ảnh */}
                     <div className="w-full mb-6">
                         <h2 className="font-semibold text-xl py-4">Hình ảnh</h2>
                         <div className="w-full">
                             <label
-                                className="w-full border-2 h-[200px] my-4 gap-4 flex flex-col items-center justify-center border-gray-400 border-dashed rounded-md"
                                 htmlFor="file"
+                                className="w-full border-2 h-[200px] my-4 flex flex-col items-center justify-center border-gray-400 border-dashed rounded-md"
                             >
                                 {isLoading ? (
                                     <Loading />
                                 ) : (
                                     <div className="flex flex-col items-center justify-center">
-                                        <BsCameraFill color="blue" size={50} />
+                                        <BsCameraFill size={50} color="blue" />
                                         Thêm ảnh
                                     </div>
                                 )}
                             </label>
-                            <input onChange={handleFiles} hidden type="file" id="file" multiple />
+                            <input id="file" type="file" multiple hidden onChange={handleFiles} />
                             <div className="w-full">
                                 <h3 className="font-medium py-4">Ảnh đã chọn</h3>
-                                <div className="flex gap-4 items-center">
-                                    {/* {previewImage?.map((item) => {
-                                        return ( */}
-                                    <div
-                                        key={data.AnhDaiDien}
-                                        className="relative w-1/3 h-1/3 border border-solid rounded-3xl shadow-md"
-                                    >
-                                        <Image
-                                            src={data.AnhDaiDien}
-                                            alt="preview"
-                                            className="w-full h-full rounded-3xl shadow-md"
-                                        />
-                                        <span
-                                            title="Xóa"
-                                            onClick={() => handleDeleteImage(data.AnhDaiDien)}
-                                            className="absolute top-0 right-0 p-2 cursor-pointer bg-gray-300 hover:bg-gray-400 rounded-full"
+                                <div className="d-flex flex-wrap gap-4">
+                                    {previewImage.map((url) => (
+                                        <div
+                                            key={url}
+                                            className="relative border rounded-3xl shadow-md d-flex"
+                                            style={{ width: '150px', height: '150px' }}
                                         >
-                                            <ImBin />
-                                        </span>
-                                    </div>
-                                    {/* );
-                                    })} */}
+                                            <Image src={url} alt="preview" className=" rounded-3xl w-100" />
+                                            <span
+                                                title="Xóa"
+                                                onClick={() => handleDeleteImage(url)}
+                                                className="absolute top-0 right-0 p-2 cursor-pointer bg-gray-300 hover:bg-gray-400 rounded-full"
+                                            >
+                                                <ImBin />
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    {/* Giá */}
                     <Form.Group className="mb-3">
                         <Form.Label>Giá:</Form.Label>
                         <Form.Control
@@ -256,6 +238,8 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                         />
                         <Form.Control.Feedback type="invalid">Vui lòng nhập giá.</Form.Control.Feedback>
                     </Form.Group>
+
+                    {/* Giá giảm */}
                     <Form.Group className="mb-3">
                         <Form.Label>Giá giảm:</Form.Label>
                         <Form.Control
@@ -268,6 +252,8 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
                         />
                         <Form.Control.Feedback type="invalid">Vui lòng nhập giá giảm.</Form.Control.Feedback>
                     </Form.Group>
+
+                    {/* Số lượng */}
                     <Form.Group className="mb-3">
                         <Form.Label>Số lượng:</Form.Label>
                         <Form.Control

@@ -17,6 +17,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAdd, faBarcode, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
 import numeral from 'numeral';
 import Search from '../../../components/Search/Search';
+import Image from '../../../components/Image';
 
 const cx = classNames.bind(styles);
 
@@ -126,7 +127,10 @@ function SanPham() {
     const fetchDataSearch = () => {
         if (Number(searchParams.get('page')) > 0 && !(show || isShowDelete)) {
             Promise.all([
-                sanphamService.searchSanPham({ page: Number(searchParams.get('page')), value: searchValue }),
+                sanphamService.searchSanPham({
+                    page: Number(searchParams.get('page')),
+                    value: searchValue,
+                }),
                 loaispService.getCategoryAll(),
             ])
                 .then(([sanphamRes, loaispRes]) => {
@@ -169,11 +173,25 @@ function SanPham() {
                     theme: 'light',
                 });
                 setShow(false);
-                // fetchData();
                 fetchDataSearch();
             })
             .catch((err) => console.error(err));
     };
+
+    function getFirstImage(src) {
+        if (Array.isArray(src)) {
+            return src[0] || '';
+        }
+        if (typeof src === 'string') {
+            try {
+                const arr = JSON.parse(src);
+                if (Array.isArray(arr)) return arr[0] || '';
+            } catch {
+                return src;
+            }
+        }
+        return '';
+    }
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -232,32 +250,35 @@ function SanPham() {
                                 </thead>
                                 <tbody id="tableBody">
                                     {sanphams.rows.length > 0 ? (
-                                        sanphams.rows.map((item) => (
-                                            <tr style={{ textAlign: 'center' }}>
-                                                <td>{item.id}</td>
-                                                <td>{item.TenLoaiSanPham}</td>
-                                                <td>{item.TenSanPham}</td>
-                                                <td>
-                                                    <img src={item.AnhDaiDien}></img>
-                                                </td>
-                                                <td>{numeral(item.Gia).format('0,0')}</td>
-                                                <td>{numeral(item.GiaGiam).format('0,0')}</td>
-                                                <td>{item.SoLuong}</td>
-                                                <td>{formatDate(item.createdAt)}</td>
-                                                <td>{formatDate(item.updatedAt)}</td>
-                                                <td>
-                                                    <button onClick={() => handleAdd(item)}>
-                                                        <FontAwesomeIcon icon={faAdd} title="Thêm" />
-                                                    </button>
-                                                    <button onClick={() => handleEdit(item)}>
-                                                        <FontAwesomeIcon icon={faEdit} title="Sửa" />
-                                                    </button>
-                                                    {/* <button onClick={() => handleDelete(item.id)}>
+                                        sanphams.rows.map((item) => {
+                                            const firstUrl = getFirstImage(item.AnhDaiDien);
+                                            return (
+                                                <tr style={{ textAlign: 'center' }}>
+                                                    <td>{item.id}</td>
+                                                    <td>{item.TenLoaiSanPham}</td>
+                                                    <td>{item.TenSanPham}</td>
+                                                    <td>
+                                                        <Image src={firstUrl}></Image>
+                                                    </td>
+                                                    <td>{numeral(item.Gia).format('0,0')}</td>
+                                                    <td>{numeral(item.GiaGiam).format('0,0')}</td>
+                                                    <td>{item.SoLuong}</td>
+                                                    <td>{formatDate(item.createdAt)}</td>
+                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                    <td>
+                                                        <button onClick={() => handleAdd(item)}>
+                                                            <FontAwesomeIcon icon={faAdd} title="Thêm" />
+                                                        </button>
+                                                        <button onClick={() => handleEdit(item)}>
+                                                            <FontAwesomeIcon icon={faEdit} title="Sửa" />
+                                                        </button>
+                                                        {/* <button onClick={() => handleDelete(item.id)}>
                                                         <FontAwesomeIcon icon={faTrash} title="Xóa" />
                                                     </button> */}
-                                                </td>
-                                            </tr>
-                                        ))
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     ) : (
                                         <tr>
                                             <td colSpan="10" style={{ textAlign: 'center' }}>

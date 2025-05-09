@@ -1,4 +1,5 @@
 import httpRequest from '~/utils/httpRequest';
+import axios from 'axios';
 
 const getSanPham = async ({ page }) => {
     return await httpRequest.get('/sanphams', {
@@ -52,17 +53,11 @@ const getProcYear = async () => {
 const apiUploadImages = (images) =>
     new Promise(async (resolve, reject) => {
         try {
-            // const response = await axios({
-            //     method: 'post',
-            //     url: `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
-            //     data: images,
-            // });
-            const response = await httpRequest.post(
-                // `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
-                `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
-                images,
-                {},
-            );
+            const response = await axios({
+                method: 'post',
+                url: `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload/`,
+                data: images,
+            });
             resolve(response);
         } catch (error) {
             reject(error);

@@ -24,7 +24,9 @@ function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
 
             <div className={cx('product__title')}>
                 <div className={cx('product__title-name')}>
-                    <a href="#">{name}</a>
+                    <a href="#" title={name}>
+                        {name}
+                    </a>
                 </div>
                 <div className={cx('product__title-price')}>
                     <ul className={cx('price-list')}>

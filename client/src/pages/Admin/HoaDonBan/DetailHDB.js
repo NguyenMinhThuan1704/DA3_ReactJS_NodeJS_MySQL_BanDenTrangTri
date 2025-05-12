@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Modal, Button, Table, Form } from 'react-bootstrap';
 import chitiethoadonbanService from '../../../services/chitiethoadonbanService';
 import sanphamService from '../../../services/sanphamService';
+import { getFirstImage } from '../../getFirstImage';
 function DetailHDB({ dataRaw, isShow, onClose }) {
     const [chiTietHoaDons, setChiTietHoaDons] = useState([]);
     const [sanPhams, setSanPhams] = useState([]);
@@ -57,22 +58,25 @@ function DetailHDB({ dataRaw, isShow, onClose }) {
                             </thead>
                             <tbody>
                                 {combinedData.length > 0 ? (
-                                    combinedData.map((item, index) => (
-                                        <tr className="text-center" key={item.MaChiTietHoaDon}>
-                                            <td>{index + 1}</td>
-                                            <td>{item.TenSanPham}</td>
-                                            <td>
-                                                <img
-                                                    src={item.AnhDaiDien}
-                                                    alt="Ảnh đại diện"
-                                                    style={{ maxWidth: '100px' }}
-                                                />
-                                            </td>
-                                            <td>{new Intl.NumberFormat().format(item.GiaCTHDB)}</td>
-                                            <td>{item.SoLuongCTHDB}</td>
-                                            <td>{new Intl.NumberFormat().format(item.TongGia)}</td>
-                                        </tr>
-                                    ))
+                                    combinedData.map((item, index) => {
+                                        const firstUrl = getFirstImage(item.AnhDaiDien);
+                                        return (
+                                            <tr className="text-center" key={item.MaChiTietHoaDon}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.TenSanPham}</td>
+                                                <td>
+                                                    <img
+                                                        src={firstUrl}
+                                                        alt="Ảnh đại diện"
+                                                        style={{ maxWidth: '100px' }}
+                                                    />
+                                                </td>
+                                                <td>{new Intl.NumberFormat().format(item.GiaCTHDB)}</td>
+                                                <td>{item.SoLuongCTHDB}</td>
+                                                <td>{new Intl.NumberFormat().format(item.TongGia)}</td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="text-center">

@@ -3,6 +3,7 @@ import { Modal, Button, Table, Form } from 'react-bootstrap';
 import chitiethoadonnhapService from '../../../services/chitiethoadonnhapService';
 import sanphamService from '../../../services/sanphamService';
 import numeral from 'numeral';
+import { getFirstImage } from '../../getFirstImage';
 
 function DetailHDB({ dataRaw, isShow, onClose }) {
     const [chiTietHoaDons, setChiTietHoaDons] = useState([]);
@@ -11,17 +12,14 @@ function DetailHDB({ dataRaw, isShow, onClose }) {
 
     useEffect(() => {
         if (dataRaw) {
-            console.log(dataRaw.id);
             chitiethoadonnhapService
                 .getChiTietHoaDonNhapByMaHD1(dataRaw.id)
                 .then((response) => {
-                    console.log(response);
                     setChiTietHoaDons(response.data.data);
                     const maSanPhams = response.data.data.map((item) => item.MaSanPham);
                     return Promise.all(maSanPhams.map((maSanPham) => sanphamService.getSanPhamById(maSanPham)));
                 })
                 .then((products) => {
-                    console.log(products);
                     setSanPhams(products.map((product) => product.data.data));
                 })
                 .catch((error) => {
@@ -37,8 +35,6 @@ function DetailHDB({ dataRaw, isShow, onClose }) {
         });
         setCombinedData(combined);
     }, [chiTietHoaDons, sanPhams]);
-
-    console.log(combinedData);
 
     return (
         <Modal show={isShow} onHide={onClose} size="lg">
@@ -64,22 +60,25 @@ function DetailHDB({ dataRaw, isShow, onClose }) {
                             </thead>
                             <tbody>
                                 {combinedData.length > 0 ? (
-                                    combinedData.map((item, index) => (
-                                        <tr className="text-center" key={item.MaChiTietHoaDon}>
-                                            <td>{index + 1}</td>
-                                            <td>{item.TenSanPham}</td>
-                                            <td>
-                                                <img
-                                                    src={item.AnhDaiDien}
-                                                    alt="Ảnh đại diện"
-                                                    style={{ maxWidth: '100px' }}
-                                                />
-                                            </td>
-                                            <td>{numeral(item.GiaNhap).format('0,0')}</td>
-                                            <td>{item.SoLuongCTHDN}</td>
-                                            <td>{numeral(item.TongTienCTHDN).format('0,0')}</td>
-                                        </tr>
-                                    ))
+                                    combinedData.map((item, index) => {
+                                        const firstUrl = getFirstImage(item.AnhDaiDien);
+                                        return (
+                                            <tr className="text-center" key={item.MaChiTietHoaDon}>
+                                                <td>{index + 1}</td>
+                                                <td>{item.TenSanPham}</td>
+                                                <td>
+                                                    <img
+                                                        src={firstUrl}
+                                                        alt="Ảnh đại diện"
+                                                        style={{ maxWidth: '100px' }}
+                                                    />
+                                                </td>
+                                                <td>{numeral(item.GiaNhap).format('0,0')}</td>
+                                                <td>{item.SoLuongCTHDN}</td>
+                                                <td>{numeral(item.TongTienCTHDN).format('0,0')}</td>
+                                            </tr>
+                                        );
+                                    })
                                 ) : (
                                     <tr>
                                         <td colSpan="6" className="text-center">

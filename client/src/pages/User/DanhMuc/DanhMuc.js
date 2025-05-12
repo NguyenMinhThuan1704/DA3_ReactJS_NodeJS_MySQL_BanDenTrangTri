@@ -20,7 +20,6 @@ function DanhMuc() {
             sanphamService
                 .getSanPhamByCate({ page: Number(searchParams.get('page')), MaLoaiSanPham: id })
                 .then((res) => {
-                    console.log(res);
                     setGetCate(res.data.data);
                 });
         }

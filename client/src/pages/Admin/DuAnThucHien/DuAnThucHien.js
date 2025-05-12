@@ -13,6 +13,7 @@ import classNames from 'classnames/bind';
 import styles from './DuAnThucHien.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEdit, faFolderOpen } from '@fortawesome/free-solid-svg-icons';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -157,30 +158,30 @@ function DuAnThucHien() {
                                 </thead>
                                 <tbody>
                                     {duans.rows.length > 0 ? (
-                                        duans.rows.map((item) => (
-                                            <tr key={item.id} style={{ textAlign: 'center' }}>
-                                                <td>{item.id}</td>
-                                                <td>{item.TieuDe}</td>
-                                                <td>
-                                                    <img
-                                                        src={item.AnhDaiDien}
-                                                        alt="Ảnh đại diện"
-                                                        style={{ width: 120 }}
-                                                    />
-                                                </td>
-                                                <td>{item.MoTa}</td>
-                                                <td>{formatDate(item.createdAt)}</td>
-                                                <td>{formatDate(item.updatedAt)}</td>
-                                                <td>
-                                                    <button onClick={() => handleEdit(item)}>
-                                                        <FontAwesomeIcon icon={faEdit} title="Sửa" />
-                                                    </button>
-                                                    <button onClick={() => handleDelete(item.id)}>
-                                                        <FontAwesomeIcon icon={faTrash} title="Xóa" />
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))
+                                        duans.rows.map((item) => {
+                                            const firstUrl = getFirstImage(item.AnhDaiDien);
+
+                                            return (
+                                                <tr key={item.id} style={{ textAlign: 'center' }}>
+                                                    <td>{item.id}</td>
+                                                    <td>{item.TieuDe}</td>
+                                                    <td>
+                                                        <img src={firstUrl} alt="Ảnh đại diện" style={{ width: 120 }} />
+                                                    </td>
+                                                    <td>{item.MoTa}</td>
+                                                    <td>{formatDate(item.createdAt)}</td>
+                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                    <td>
+                                                        <button onClick={() => handleEdit(item)}>
+                                                            <FontAwesomeIcon icon={faEdit} title="Sửa" />
+                                                        </button>
+                                                        <button onClick={() => handleDelete(item.id)}>
+                                                            <FontAwesomeIcon icon={faTrash} title="Xóa" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
                                     ) : (
                                         <tr>
                                             <td colSpan="7" style={{ textAlign: 'center' }}>

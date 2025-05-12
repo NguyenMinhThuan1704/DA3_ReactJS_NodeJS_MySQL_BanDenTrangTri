@@ -32,7 +32,6 @@ function HoaDonBan() {
         const page = Number(searchParams.get('page'));
         if (page > 0) {
             hoadonbanService.TKHoaDonBan({ page, data }).then((res) => {
-                console.log(res);
                 setResults(res.data.data);
             });
         }

@@ -89,7 +89,6 @@ function TaiKhoan() {
                             LoaiTaiKhoan: loaiTK ? loaiTK.TenLoaiTK : 'Unknown',
                         };
                     });
-                    console.log(loaitaikhoanRes);
                     setTaiKhoans({ rows: mergedData, count: taikhoanRes.data.data.count });
                     setLoaiTaiKhoans(loaitaikhoans);
                 })

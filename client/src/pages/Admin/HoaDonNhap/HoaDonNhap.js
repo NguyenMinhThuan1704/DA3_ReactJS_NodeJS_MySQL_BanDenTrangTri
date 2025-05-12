@@ -35,7 +35,6 @@ function HoaDonNhap() {
     };
 
     const handleDetail = (item) => {
-        console.log(item);
         setData(item);
         setShowDetail(true);
     };

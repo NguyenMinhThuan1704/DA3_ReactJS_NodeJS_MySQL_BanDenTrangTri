@@ -64,7 +64,7 @@ function HoaDonBan() {
 
     useEffect(() => {
         fetchHoaDonBans();
-    }, [searchParams, hoadonbans, show, searchValue]);
+    }, [searchParams, show, searchValue]);
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };

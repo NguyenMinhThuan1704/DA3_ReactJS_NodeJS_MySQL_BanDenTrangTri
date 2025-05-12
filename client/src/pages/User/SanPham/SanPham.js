@@ -10,6 +10,7 @@ import cartService from '../../../services/cartService';
 import Pagination from '../../../components/Pagination/Pagination';
 import config from '~/config';
 import sanphamService from '../../../services/sanphamService';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -25,8 +26,6 @@ function SanPham() {
             setGetID(res.data.data);
         });
     }, [id]);
-
-    console.log(getID);
 
     useEffect(() => {
         if (Number(searchParams.get('page')) > 0 && getID.MaLoaiSanPham) {
@@ -107,6 +106,8 @@ function SanPham() {
         return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
     };
 
+    const newImg = getFirstImage(getID.AnhDaiDien);
+
     return (
         <div className={cx('container', 'grid', 'wide')}>
             <ToastContainer />
@@ -134,7 +135,7 @@ function SanPham() {
                 <div className={cx('col', 'c-5')}>
                     <div className={cx('frame_img')}>
                         <div className={cx('img_wrapper')}>
-                            <img src={getID.AnhDaiDien} alt="" className={cx('img')} />
+                            <img src={newImg} alt="" className={cx('img')} />
                         </div>
                     </div>
                 </div>

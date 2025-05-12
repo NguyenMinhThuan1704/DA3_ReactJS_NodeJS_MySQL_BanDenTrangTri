@@ -48,7 +48,6 @@ function Login() {
                 });
                 console.log(err);
             });
-        // console.log('Login data:', loginData);
     };
 
     return (

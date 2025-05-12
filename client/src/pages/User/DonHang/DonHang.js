@@ -11,6 +11,7 @@ import hoadonbanService from '../../../services/hoadonbanService';
 import chitiethoadonbanService from '../../../services/chitiethoadonbanService';
 import sanphamService from '../../../services/sanphamService';
 import numeral from 'numeral';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -80,7 +81,7 @@ function DonHang() {
                     TrangThai: 'Hoàn thành',
                 };
                 await hoadonbanService.updateHoaDonBan(data, id);
-                // fetchHoaDonBans();
+                fetchHoaDonBans();
             } catch (error) {
                 console.error('Failed to update order status', error);
             }
@@ -89,7 +90,7 @@ function DonHang() {
 
     useEffect(() => {
         fetchHoaDonBans();
-    }, [searchParams, chiTietHoaDons]);
+    }, [searchParams]);
 
     return (
         <div className={cx('container', 'grid', 'wide')}>
@@ -103,59 +104,74 @@ function DonHang() {
                             <span>Thông tin đơn hàng</span>
                         </div>
                         <div className={cx('product-list')}>
-                            {chiTietHoaDons.map((product) => (
-                                <div key={product.id} className={cx('product-item')}>
-                                    <div className={cx('product-image')}>
-                                        <img src={product.AnhDaiDien} alt={product.AnhDaiDien} />
-                                    </div>
-                                    <div className={cx('product-details')}>
-                                        <div className={cx('product-name')}>{product.TenSanPham}</div>
-                                        <div className={cx('product-price')}>
-                                            Giá: {numeral(product.GiaCTHDB).format('0,0')} VND
+                            {chiTietHoaDons.map((product) => {
+                                const firstUrl = getFirstImage(product.AnhDaiDien);
+
+                                return (
+                                    <div key={product.id} className={cx('product-item')}>
+                                        <div className={cx('product-image')}>
+                                            <img src={firstUrl} alt={firstUrl} />
                                         </div>
-                                        <div className={cx('product-quantity')}>Số lượng: {product.SoLuongCTHDB}</div>
-                                        <div className={cx('product-total')}>
-                                            Thành tiền: {numeral(product.TongGia).format('0,0')} VND
+                                        <div className={cx('product-details')}>
+                                            <div className={cx('product-name')}>{product.TenSanPham}</div>
+                                            <div className={cx('product-price')}>
+                                                Giá: {numeral(product.GiaCTHDB).format('0,0')} VND
+                                            </div>
+                                            <div className={cx('product-quantity')}>
+                                                Số lượng: {product.SoLuongCTHDB}
+                                            </div>
+                                            <div className={cx('product-total')}>
+                                                Thành tiền: {numeral(product.TongGia).format('0,0')} VND
+                                            </div>
+                                        </div>
+                                        <div className={cx('product-action')}>
+                                            {product.TrangThaiDuyet === 0 ? (
+                                                <button
+                                                    style={{
+                                                        opacity: 0.8,
+                                                        cursor: 'default',
+                                                    }}
+                                                    className={cx('buy-button')}
+                                                >
+                                                    Chờ xác nhận
+                                                </button>
+                                            ) : product.TrangThaiDuyet === 1 && product.Shipped === 0 ? (
+                                                <button
+                                                    style={{
+                                                        opacity: 0.8,
+                                                        cursor: 'default',
+                                                    }}
+                                                    className={cx('buy-button')}
+                                                >
+                                                    Chờ đơn vị vận chuyển
+                                                </button>
+                                            ) : product.TrangThaiDuyet === 1 &&
+                                              product.Shipped === 1 &&
+                                              product.TrangThai !== 'Hoàn thành' ? (
+                                                <button
+                                                    className={cx('buy-button')}
+                                                    onClick={() => handleButtonClick(product)}
+                                                >
+                                                    Đã nhận được hàng
+                                                </button>
+                                            ) : product.TrangThaiDuyet === 1 &&
+                                              product.Shipped === 1 &&
+                                              product.TrangThai === 'Hoàn thành' ? (
+                                                <button
+                                                    style={{
+                                                        opacity: 0.8,
+                                                        cursor: 'default',
+                                                    }}
+                                                    className={cx('buy-button')}
+                                                    disabled
+                                                >
+                                                    Hoàn thành
+                                                </button>
+                                            ) : null}
                                         </div>
                                     </div>
-                                    <div className={cx('product-action')}>
-                                        {product.TrangThaiDuyet === 0 ? (
-                                            <button
-                                                style={{ opacity: 0.8, cursor: 'default' }}
-                                                className={cx('buy-button')}
-                                            >
-                                                Chờ xác nhận
-                                            </button>
-                                        ) : product.TrangThaiDuyet === 1 && product.Shipped === 0 ? (
-                                            <button
-                                                style={{ opacity: 0.8, cursor: 'default' }}
-                                                className={cx('buy-button')}
-                                            >
-                                                Chờ đơn vị vận chuyển
-                                            </button>
-                                        ) : product.TrangThaiDuyet === 1 &&
-                                          product.Shipped === 1 &&
-                                          product.TrangThai !== 'Hoàn thành' ? (
-                                            <button
-                                                className={cx('buy-button')}
-                                                onClick={() => handleButtonClick(product)}
-                                            >
-                                                Đã nhận được hàng
-                                            </button>
-                                        ) : product.TrangThaiDuyet === 1 &&
-                                          product.Shipped === 1 &&
-                                          product.TrangThai === 'Hoàn thành' ? (
-                                            <button
-                                                style={{ opacity: 0.8, cursor: 'default' }}
-                                                className={cx('buy-button')}
-                                                disabled
-                                            >
-                                                Hoàn thành
-                                            </button>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         <div className={cx('col-12', 'col-s-12', 'padding-box')}>
                             <div className={cx('box-sum')}>

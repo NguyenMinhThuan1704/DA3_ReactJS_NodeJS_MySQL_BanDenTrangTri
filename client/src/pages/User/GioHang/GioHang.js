@@ -13,6 +13,7 @@ import sanphamService from '../../../services/sanphamService';
 import hoadonbanService from '../../../services/hoadonbanService';
 import chitiethoadonbanService from '../../../services/chitiethoadonbanService';
 import config from '~/config';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -129,7 +130,7 @@ function GioHang() {
                 SoDienThoai: values.SoDienThoai,
                 DiaChi: values.DiaChi,
                 Email: values.Email,
-                TrangThai: false,
+                TrangThaiDuyet: false,
                 Shipped: false,
                 TongGia: totalPrice,
             };
@@ -302,65 +303,75 @@ function GioHang() {
                         {carts.rows.length === 0 ? (
                             <div className={cx('empty-cart')}>Giỏ hàng rỗng</div>
                         ) : (
-                            carts.rows.map((item) => (
-                                <div key={item.id} className={cx('row', 'grid', 'wide')} style={{ marginTop: '10px' }}>
-                                    <div className={cx('col', 'c-12')} style={{ padding: '0', display: 'flex' }}>
-                                        <div className={cx('col', 'c-2', 'product__img')}>
-                                            <a href="" className={cx('product__img-link')}>
-                                                <img src={item.AnhDaiDien} alt="" className={cx('img')} />
-                                            </a>
-                                        </div>
-                                        <div className={cx('col', 'c-10', 'product__thongtin')}>
-                                            <div className={cx('name-cart')}>
-                                                <span>{item.TenSanPham}</span>
+                            carts.rows.map((item) => {
+                                const firstUrl = getFirstImage(item.AnhDaiDien);
+
+                                return (
+                                    <div
+                                        key={item.id}
+                                        className={cx('row', 'grid', 'wide')}
+                                        style={{ marginTop: '10px' }}
+                                    >
+                                        <div className={cx('col', 'c-12')} style={{ padding: '0', display: 'flex' }}>
+                                            <div className={cx('col', 'c-2', 'product__img')}>
+                                                <a href="" className={cx('product__img-link')}>
+                                                    <img src={firstUrl} alt="" className={cx('img')} />
+                                                </a>
                                             </div>
-                                            <div>
-                                                <span>
-                                                    Mã sản phẩm : <b>{item.MaSanPham}</b>
-                                                </span>
-                                            </div>
-                                            <div className={cx('price__wrapper')}>
-                                                <div className={cx('row', 'grid', 'wide', 'price__chitiet')}>
-                                                    <div className={cx('col', 'c-6')}>
-                                                        <div className={cx('number')}>
-                                                            <div className={cx('number__left')}>Số lượng:</div>
-                                                            <div className={cx('number__left', 'quantity-input')}>
-                                                                <input
-                                                                    type="number"
-                                                                    min="1"
-                                                                    value={item.SoLuong}
-                                                                    onChange={(e) =>
-                                                                        handleChangeQuantity(
-                                                                            item.id,
-                                                                            parseInt(e.target.value),
-                                                                        )
-                                                                    }
-                                                                />
+                                            <div className={cx('col', 'c-10', 'product__thongtin')}>
+                                                <div className={cx('name-cart')}>
+                                                    <span>{item.TenSanPham}</span>
+                                                </div>
+                                                <div>
+                                                    <span>
+                                                        Mã sản phẩm : <b>{item.MaSanPham}</b>
+                                                    </span>
+                                                </div>
+                                                <div className={cx('price__wrapper')}>
+                                                    <div className={cx('row', 'grid', 'wide', 'price__chitiet')}>
+                                                        <div className={cx('col', 'c-6')}>
+                                                            <div className={cx('number')}>
+                                                                <div className={cx('number__left')}>Số lượng:</div>
+                                                                <div className={cx('number__left', 'quantity-input')}>
+                                                                    <input
+                                                                        type="number"
+                                                                        min="1"
+                                                                        value={item.SoLuong}
+                                                                        onChange={(e) =>
+                                                                            handleChangeQuantity(
+                                                                                item.id,
+                                                                                parseInt(e.target.value),
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <div className={cx('col', 'c-6')} style={{ display: 'flex' }}>
-                                                        <div className={cx('price')}>
-                                                            Giá bán :{' '}
-                                                            <span>
-                                                                {item.Gia.toLocaleString()}
-                                                                <sup>đ</sup>
-                                                            </span>
+                                                        <div className={cx('col', 'c-6')} style={{ display: 'flex' }}>
+                                                            <div className={cx('price')}>
+                                                                Giá bán :{' '}
+                                                                <span>
+                                                                    {item.Gia.toLocaleString()}
+                                                                    <sup>đ</sup>
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                style={{
+                                                                    backgroundColor: 'transparent',
+                                                                }}
+                                                                onClick={() => handleDeleteCart(item.id)}
+                                                                className={cx('delete')}
+                                                            >
+                                                                <FontAwesomeIcon icon={faTrash} />
+                                                            </button>
                                                         </div>
-                                                        <button
-                                                            style={{ backgroundColor: 'transparent' }}
-                                                            onClick={() => handleDeleteCart(item.id)}
-                                                            className={cx('delete')}
-                                                        >
-                                                            <FontAwesomeIcon icon={faTrash} />
-                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))
+                                );
+                            })
                         )}
                     </div>
 

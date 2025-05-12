@@ -18,6 +18,7 @@ import { faAdd, faBarcode, faEdit, faTrash } from '@fortawesome/free-solid-svg-i
 import numeral from 'numeral';
 import Search from '../../../components/Search/Search';
 import Image from '../../../components/Image';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -177,21 +178,6 @@ function SanPham() {
             })
             .catch((err) => console.error(err));
     };
-
-    function getFirstImage(src) {
-        if (Array.isArray(src)) {
-            return src[0] || '';
-        }
-        if (typeof src === 'string') {
-            try {
-                const arr = JSON.parse(src);
-                if (Array.isArray(arr)) return arr[0] || '';
-            } catch {
-                return src;
-            }
-        }
-        return '';
-    }
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };

@@ -9,6 +9,7 @@ import Option from './Option';
 import styles from './Home.module.scss';
 import axios from 'axios';
 import img from '~/assets/img';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -41,7 +42,6 @@ function Home() {
         });
     }, []);
 
-    console.log(newSP);
     const slideWrapperRef = useRef(null);
     const [newProductLength, setNewProductLength] = useState(0);
 
@@ -209,17 +209,20 @@ function Home() {
                 </div>
 
                 <div className={cx('row', 'new__product-item-wrapper', 'den_moi')} ref={slideWrapperRef}>
-                    {newSP.map((newproduct) => (
-                        <NewProduct
-                            key={newproduct.id}
-                            id={newproduct.id}
-                            img={newproduct.AnhDaiDien}
-                            name={newproduct.TenSanPham}
-                            priceOld={newproduct.Gia}
-                            priceNew={newproduct.GiaGiam}
-                            sale="30"
-                        />
-                    ))}
+                    {newSP.map((newproduct) => {
+                        const firstUrl = getFirstImage(newproduct.AnhDaiDien);
+                        return (
+                            <NewProduct
+                                key={newproduct.id}
+                                id={newproduct.id}
+                                img={firstUrl}
+                                name={newproduct.TenSanPham}
+                                priceOld={newproduct.Gia}
+                                priceNew={newproduct.GiaGiam}
+                                sale="30"
+                            />
+                        );
+                    })}
                 </div>
             </div>
 
@@ -247,17 +250,20 @@ function Home() {
                     </div>
 
                     <div className={cx('app__container-item-product', 'col', 'l-2-8', 'c-12', 'den_chum')}>
-                        {denchums.map((product) => (
-                            <Product
-                                key={product.id}
-                                id={product.id}
-                                img={product.AnhDaiDien}
-                                name={product.TenSanPham}
-                                priceOld={product.Gia}
-                                priceNew={product.GiaGiam}
-                                sale="30"
-                            />
-                        ))}
+                        {denchums.map((product) => {
+                            const firstUrl = getFirstImage(product.AnhDaiDien);
+                            return (
+                                <Product
+                                    key={product.id}
+                                    id={product.id}
+                                    img={firstUrl}
+                                    name={product.TenSanPham}
+                                    priceOld={product.Gia}
+                                    priceNew={product.GiaGiam}
+                                    sale="30"
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </div>

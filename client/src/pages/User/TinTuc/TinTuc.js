@@ -1,11 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import {useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './TinTuc.module.scss';
 import { faAngleRight, faAnglesRight } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Item from './Item';
 import axios from 'axios';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -37,17 +38,19 @@ function TinTuc() {
 
             <div className={cx('new__product')}>
                 <div className={cx('row', 'new__product-item-wrapper')}>
-                    {listOfPosts.map((item) => (
-                        <Item
-                            key={item.id}
-                            img={item.AnhDaiDien}
-                            // img={img.tintuc.tintuc1}
-                            // img='./../assets/img/Tin tức/tintuc29.jpg'
-                            title={item.TieuDe}
-                            date={item.createdAt}
-                            description={item.MoTa}
-                        />
-                    ))}
+                    {listOfPosts.map((item) => {
+                        const firstUrl = getFirstImage(item.AnhDaiDien);
+
+                        return (
+                            <Item
+                                key={item.id}
+                                img={firstUrl}
+                                title={item.TieuDe}
+                                date={item.createdAt}
+                                description={item.MoTa}
+                            />
+                        );
+                    })}
                 </div>
             </div>
 

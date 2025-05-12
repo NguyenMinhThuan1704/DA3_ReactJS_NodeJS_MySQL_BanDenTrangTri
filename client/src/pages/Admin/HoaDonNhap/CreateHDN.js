@@ -14,6 +14,7 @@ import nhaphanphoiService from '../../../services/nhaphanphoiService';
 import taikhoanService from '../../../services/taikhoanService';
 import config from '~/config';
 import numeral from 'numeral';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -163,8 +164,6 @@ function CreateHDN({ dataRaw, isShow, onClose }) {
         }
     };
 
-    console.log(spData);
-
     return (
         <Modal show={isShow} onHide={onClose} size="lg">
             <ToastContainer />
@@ -253,44 +252,44 @@ function CreateHDN({ dataRaw, isShow, onClose }) {
                         </thead>
                         <tbody>
                             {spData.length > 0 ? (
-                                spData.map((item, index) => (
-                                    <tr className="text-center" key={index}>
-                                        <td>{index + 1}</td>
-                                        <td>{item.TenSanPham}</td>
-                                        <td>
-                                            <img
-                                                src={item.AnhDaiDien}
-                                                alt="Ảnh đại diện"
-                                                style={{ maxWidth: '100px' }}
-                                            />
-                                        </td>
-                                        <td>{numeral(item.GiaNhap).format('0,0')}</td>
-                                        <td>
-                                            <input
-                                                type="number"
-                                                min="1"
-                                                value={item.SoLuong}
-                                                style={{ width: 50 }}
-                                                onChange={(e) => {
-                                                    const newQuantity = parseInt(e.target.value);
-                                                    if (!isNaN(newQuantity) && newQuantity >= 1) {
-                                                        const updatedSpData = [...spData];
-                                                        updatedSpData[index].SoLuong = newQuantity;
-                                                        updatedSpData[index].TongTien =
-                                                            item.GiaGiam * 0.7 * newQuantity;
-                                                        updateLocalStorage(updatedSpData);
-                                                    }
-                                                }}
-                                            />
-                                        </td>
-                                        <td>{numeral(item.TongTien).format('0,0')}</td>
-                                        <td>
-                                            <button onClick={(e) => handleDelete(index, e)}>
-                                                <FontAwesomeIcon icon={faTrash} title="Xóa" />
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))
+                                spData.map((item, index) => {
+                                    const firstUrl = getFirstImage(item.AnhDaiDien);
+
+                                    return (
+                                        <tr className="text-center" key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{item.TenSanPham}</td>
+                                            <td>
+                                                <img src={firstUrl} alt="Ảnh đại diện" style={{ maxWidth: '100px' }} />
+                                            </td>
+                                            <td>{numeral(item.GiaNhap).format('0,0')}</td>
+                                            <td>
+                                                <input
+                                                    type="number"
+                                                    min="1"
+                                                    value={item.SoLuong}
+                                                    style={{ width: 50 }}
+                                                    onChange={(e) => {
+                                                        const newQuantity = parseInt(e.target.value);
+                                                        if (!isNaN(newQuantity) && newQuantity >= 1) {
+                                                            const updatedSpData = [...spData];
+                                                            updatedSpData[index].SoLuong = newQuantity;
+                                                            updatedSpData[index].TongTien =
+                                                                item.GiaGiam * 0.7 * newQuantity;
+                                                            updateLocalStorage(updatedSpData);
+                                                        }
+                                                    }}
+                                                />
+                                            </td>
+                                            <td>{numeral(item.TongTien).format('0,0')}</td>
+                                            <td>
+                                                <button onClick={(e) => handleDelete(index, e)}>
+                                                    <FontAwesomeIcon icon={faTrash} title="Xóa" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             ) : (
                                 <tr>
                                     <td colSpan="7" className="text-center">

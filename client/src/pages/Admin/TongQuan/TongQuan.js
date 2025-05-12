@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBoxes, faCloud, faSignal, faUndoAlt } from '@fortawesome/free-solid-svg-icons';
 import sanphamService from '../../../services/sanphamService';
 import numeral from 'numeral';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -174,11 +175,13 @@ function TongQuan() {
                                     <div className={cx('box-left')}>
                                         <FontAwesomeIcon icon={faCloud} />
                                     </div>
-                                    <div className={cx('box-right')}>
-                                        Số đơn hàng bán: <span>{procDay?.SoDonHangBan || 'Loading...'}</span>
-                                    </div>
-                                    <div className={cx('box-right')}>
-                                        Số sản phẩm bán: <span>{procDay?.SoSanPhamBan || 'Loading...'}</span>
+                                    <div style={{ display: 'inline-grid' }}>
+                                        <div className={cx('box-right')}>
+                                            Số đơn hàng bán: <span>{procDay?.SoDonHangBan || 'Loading...'}</span>
+                                        </div>
+                                        <div className={cx('box-right')}>
+                                            Số sản phẩm bán: <span>{procDay?.SoSanPhamBan || 'Loading...'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -187,11 +190,13 @@ function TongQuan() {
                                     <div className={cx('box-left')}>
                                         <FontAwesomeIcon icon={faUndoAlt} />
                                     </div>
-                                    <div className={cx('box-right')}>
-                                        Số đơn hàng nhập: <span>{procDay?.SoDonHangNhap || 'Loading...'}</span>
-                                    </div>
-                                    <div className={cx('box-right')}>
-                                        Số sản phẩm mới nhập: <span>{procDay?.SoSanPhamNhap || 'Loading...'}</span>
+                                    <div style={{ display: 'inline-grid' }}>
+                                        <div className={cx('box-right')}>
+                                            Số đơn hàng nhập: <span>{procDay?.SoDonHangNhap || 'Loading...'}</span>
+                                        </div>
+                                        <div className={cx('box-right')}>
+                                            Số sản phẩm mới nhập: <span>{procDay?.SoSanPhamNhap || 'Loading...'}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -219,26 +224,36 @@ function TongQuan() {
                                     <FontAwesomeIcon icon={faBoxes} /> Sản phẩm bán chạy nhất
                                 </div>
                                 <div className={cx('box2-bot')}>
-                                    {listTopSP.map((product) => (
-                                        <div key={product.id} style={{ padding: 0, margin: '12px 0', display: 'flex' }}>
-                                            <div className={cx('product__img')}>
-                                                <a className={cx('product__img-link')}>
-                                                    <img src={product.AnhDaiDien} alt="" className={cx('img')} />
-                                                </a>
-                                            </div>
-                                            <div className={cx('col', 'c-10', 'product__thongtin')}>
-                                                <div className={cx('name-cart')}>
-                                                    <span>{product.TenSanPham}</span>
+                                    {listTopSP.map((product) => {
+                                        const firstUrl = getFirstImage(product.AnhDaiDien);
+                                        return (
+                                            <div
+                                                key={product.id}
+                                                style={{
+                                                    padding: 0,
+                                                    margin: '12px 0',
+                                                    display: 'flex',
+                                                }}
+                                            >
+                                                <div className={cx('product__img')}>
+                                                    <a className={cx('product__img-link')}>
+                                                        <img src={firstUrl} alt="" className={cx('img')} />
+                                                    </a>
                                                 </div>
-                                                <div>
-                                                    <span>
-                                                        Mã sản phẩm: {product.id}
-                                                        <b></b>
-                                                    </span>
+                                                <div className={cx('col', 'c-10', 'product__thongtin')}>
+                                                    <div className={cx('name-cart')}>
+                                                        <span>{product.TenSanPham}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span>
+                                                            Mã sản phẩm: {product.id}
+                                                            <b></b>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
@@ -248,26 +263,36 @@ function TongQuan() {
                                     <FontAwesomeIcon icon={faBoxes} /> Sản phẩm mới nhất
                                 </div>
                                 <div className={cx('box2-bot')}>
-                                    {listSPNew.map((product) => (
-                                        <div key={product.id} style={{ padding: 0, margin: '12px 0', display: 'flex' }}>
-                                            <div className={cx('product__img')}>
-                                                <a className={cx('product__img-link')}>
-                                                    <img src={product.AnhDaiDien} alt="" className={cx('img')} />
-                                                </a>
-                                            </div>
-                                            <div className={cx('col', 'c-10', 'product__thongtin')}>
-                                                <div className={cx('name-cart')}>
-                                                    <span>{product.TenSanPham}</span>
+                                    {listSPNew.map((product) => {
+                                        const firstUrl = getFirstImage(product.AnhDaiDien);
+                                        return (
+                                            <div
+                                                key={product.id}
+                                                style={{
+                                                    padding: 0,
+                                                    margin: '12px 0',
+                                                    display: 'flex',
+                                                }}
+                                            >
+                                                <div className={cx('product__img')}>
+                                                    <a className={cx('product__img-link')}>
+                                                        <img src={firstUrl} alt="" className={cx('img')} />
+                                                    </a>
                                                 </div>
-                                                <div>
-                                                    <span>
-                                                        Mã sản phẩm: {product.id}
-                                                        <b></b>
-                                                    </span>
+                                                <div className={cx('col', 'c-10', 'product__thongtin')}>
+                                                    <div className={cx('name-cart')}>
+                                                        <span>{product.TenSanPham}</span>
+                                                    </div>
+                                                    <div>
+                                                        <span>
+                                                            Mã sản phẩm: {product.id}
+                                                            <b></b>
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>

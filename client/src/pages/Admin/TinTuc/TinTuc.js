@@ -13,6 +13,7 @@ import classNames from 'classnames/bind';
 import styles from './TinTuc.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash, faEdit, faNewspaper } from '@fortawesome/free-solid-svg-icons';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -30,9 +31,9 @@ function TinTuc() {
     const [tintucs, setTinTucs] = useState({ rows: [], count: 0 });
 
     const [searchValue, setSearchValue] = useState('');
-    
+
     const handleOKDelete = () => {
-        tintucService.deleteTinTuc(id)
+        tintucService.deleteTinTuc(id);
         setID(0);
         setIsShowDelete(false);
         toast.success('Xóa thành công!', {
@@ -44,23 +45,23 @@ function TinTuc() {
             progress: undefined,
             theme: 'light',
         });
-    }
+    };
 
     const handleShow = () => {
-        setData(undefined)
+        setData(undefined);
         setShow(true);
-    }
+    };
     const handleEdit = (item) => {
-        setData(item)
+        setData(item);
         setShow(true);
-    }
+    };
     const handleDelete = (itemID) => {
-        setID(itemID)
+        setID(itemID);
         setIsShowDelete(true);
-    }
-    const handleClose =() => {
+    };
+    const handleClose = () => {
         setShow(false);
-    }
+    };
 
     const handleSearchChange = (event) => {
         const { value } = event.target;
@@ -74,38 +75,40 @@ function TinTuc() {
             });
         }
     }, [searchParams, show, isShowDelete, searchValue]);
-    
+
     const handleSave = (data, type) => {
         if (type === 'create') {
-            tintucService.createTinTuc(data)
-            .then((res) => {
-                toast.success('Tạo thành công!', {
-                    position: 'top-right',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'light',
-                });
-                setShow(false);
-            })
-            .catch((err) => console.log(err));
+            tintucService
+                .createTinTuc(data)
+                .then((res) => {
+                    toast.success('Tạo thành công!', {
+                        position: 'top-right',
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: 'light',
+                    });
+                    setShow(false);
+                })
+                .catch((err) => console.log(err));
         } else if (type === 'update') {
-            tintucService.updateTinTuc(data, data.id)
-            .then((res) => {
-                toast.success('Sửa thành công!', {
-                    position: 'top-center',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'light',
-                });
-                setShow(false);
-            })
-            .catch((err) => console.log(err));
+            tintucService
+                .updateTinTuc(data, data.id)
+                .then((res) => {
+                    toast.success('Sửa thành công!', {
+                        position: 'top-center',
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        draggable: true,
+                        progress: undefined,
+                        theme: 'light',
+                    });
+                    setShow(false);
+                })
+                .catch((err) => console.log(err));
         }
     };
 
@@ -153,34 +156,38 @@ function TinTuc() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                {(tintucs.rows.length > 0) ? (
-                                    (tintucs.rows).map((item) => (
-                                        <tr key={item.id} style={{ textAlign: 'center' }}>
-                                            <td>{item.id}</td>
-                                            <td>{item.TieuDe}</td>
-                                            <td>
-                                                <img src={item.AnhDaiDien} alt="Ảnh đại diện" />
-                                            </td>
-                                            <td>{item.MoTa}</td>
-                                            <td>{formatDate(item.createdAt)}</td>
-                                            <td>{formatDate(item.updatedAt)}</td>
-                                            <td>
-                                                <button onClick={() => handleEdit(item)}>
-                                                    <FontAwesomeIcon icon={faEdit} title="Sửa" />
-                                                </button>
-                                                <button onClick={() => handleDelete(item.id)}>
-                                                    <FontAwesomeIcon icon={faTrash} title="Xóa" />
-                                                </button>
+                                    {tintucs.rows.length > 0 ? (
+                                        tintucs.rows.map((item) => {
+                                            const firstUrl = getFirstImage(item.AnhDaiDien);
+
+                                            return (
+                                                <tr key={item.id} style={{ textAlign: 'center' }}>
+                                                    <td>{item.id}</td>
+                                                    <td>{item.TieuDe}</td>
+                                                    <td>
+                                                        <img src={firstUrl} alt="Ảnh đại diện" />
+                                                    </td>
+                                                    <td>{item.MoTa}</td>
+                                                    <td>{formatDate(item.createdAt)}</td>
+                                                    <td>{formatDate(item.updatedAt)}</td>
+                                                    <td>
+                                                        <button onClick={() => handleEdit(item)}>
+                                                            <FontAwesomeIcon icon={faEdit} title="Sửa" />
+                                                        </button>
+                                                        <button onClick={() => handleDelete(item.id)}>
+                                                            <FontAwesomeIcon icon={faTrash} title="Xóa" />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="7" style={{ textAlign: 'center' }}>
+                                                Không có tin tức nào
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan="7" style={{ textAlign: 'center' }}>
-                                            Không có tin tức nào
-                                        </td>
-                                    </tr>
-                                )}
+                                    )}
                                 </tbody>
                             </table>
                         </div>

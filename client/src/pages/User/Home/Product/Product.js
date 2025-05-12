@@ -5,6 +5,7 @@ import styles from './Product.module.scss';
 import { NavLink, useNavigate } from 'react-router-dom';
 import cartService from '../../../../services/cartService';
 import config from '~/config';
+import { getFirstImage } from '../../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -49,7 +50,6 @@ function Product({ id, img, name, priceOld, priceNew, sale }) {
             setTimeout(() => {
                 navigate(config.routes.giohang);
             }, 2000);
-            console.log('Product added to cart:', response);
         } catch (error) {
             console.error('Error adding product to cart:', error);
             toast.error('Thêm sản phẩm vào giỏ hàng thất bại!', {

@@ -18,7 +18,7 @@ const cx = classNames.bind(styles);
 function DonHang() {
     const [chiTietHoaDons, setChiTietHoaDons] = useState([]);
     const [searchParams] = useSearchParams();
-
+    const POLL_INTERVAL = 3000;
     const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
     const id = taikhoan.id;
 
@@ -90,6 +90,10 @@ function DonHang() {
 
     useEffect(() => {
         fetchHoaDonBans();
+        const timer = setInterval(() => {
+            fetchHoaDonBans();
+        }, POLL_INTERVAL);
+        return () => clearInterval(timer);
     }, [searchParams]);
 
     return (

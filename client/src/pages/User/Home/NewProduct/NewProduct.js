@@ -1,7 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import classNames from 'classnames/bind';
 import styles from './NewProduct.module.scss';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import config from '~/config';
+import cartService from '../../../../services/cartService';
+
 // import numeral from 'numeral';
 
 const cx = classNames.bind(styles);
@@ -9,6 +13,59 @@ const cx = classNames.bind(styles);
 function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
     const formatCurrency = (price) => {
         return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    };
+    const navigate = useNavigate();
+    const handleBuyNow = async () => {
+        const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+        if (!taikhoan) {
+            console.error('No account information found in local storage.');
+            toast.error('Bạn cần đăng nhập trước khi đặt hàng!', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+            setTimeout(() => {
+                navigate(config.routes.login);
+            }, 2000);
+            return;
+        }
+
+        const data = {
+            MaSanPham: id,
+            MaTaiKhoan: taikhoan.id,
+            SoLuong: 1,
+        };
+
+        try {
+            const response = await cartService.createCart(data);
+            toast.success('Thêm sản phẩm vào giỏ hàng thành công!', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+            setTimeout(() => {
+                navigate(config.routes.giohang);
+            }, 2000);
+        } catch (error) {
+            console.error('Error adding product to cart:', error);
+            toast.error('Thêm sản phẩm vào giỏ hàng thất bại!', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+        }
     };
     return (
         <div className={cx('new__product-item', 'col', 'l-3', 'm-4', 'c-6')}>
@@ -24,9 +81,9 @@ function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
 
             <div className={cx('product__title')}>
                 <div className={cx('product__title-name')}>
-                    <a href="#" title={name}>
+                    <NavLink to={`/user/sanpham/${id}`} title={name}>
                         {name}
-                    </a>
+                    </NavLink>
                 </div>
                 <div className={cx('product__title-price')}>
                     <ul className={cx('price-list')}>
@@ -38,9 +95,9 @@ function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
             </div>
 
             <div className={cx('item-title-add')}>
-                <a href="#" className={cx('item-title-link')}>
+                <button className={cx('item-title-link')} onClick={handleBuyNow}>
                     Mua ngay
-                </a>
+                </button>
             </div>
         </div>
     );

@@ -133,6 +133,7 @@ function GioHang() {
                 TrangThaiDuyet: false,
                 Shipped: false,
                 TongGia: totalPrice,
+                TrangThai: 'Chưa duyệt',
             };
             const hoaDonResponse = await hoadonbanService.createHoaDonBan(hoaDonData);
             try {

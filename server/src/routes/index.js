@@ -12,6 +12,7 @@ const hoadonbanRouter = require("./hoadonban");
 const hoadonnhapRouter = require("./hoadonnhap");
 const chitiethoadonbanRouter = require("./chitiethoadonban");
 const chitiethoadonnhapRouter = require("./chitiethoadonnhap");
+const danhgiaRouter = require("./danhgia");
 
 const routes = (app) => {
   app.use("/users", userRouter);
@@ -28,6 +29,7 @@ const routes = (app) => {
   app.use("/hoadonnhaps", hoadonnhapRouter);
   app.use("/chitiethoadonbans", chitiethoadonbanRouter);
   app.use("/chitiethoadonnhaps", chitiethoadonnhapRouter);
+  app.use("/danhgias", danhgiaRouter);
 };
 
 module.exports = routes;

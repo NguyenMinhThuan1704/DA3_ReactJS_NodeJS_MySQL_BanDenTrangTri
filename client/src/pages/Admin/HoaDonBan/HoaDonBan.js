@@ -4,7 +4,6 @@ import classNames from 'classnames/bind';
 import styles from './HoaDonBan.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShoppingCart } from '@fortawesome/free-solid-svg-icons';
-
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
@@ -18,6 +17,8 @@ const cx = classNames.bind(styles);
 
 function HoaDonBan() {
     const [show, setShow] = useState(false);
+
+    const [reload, setReload] = useState(false);
 
     const [data, setData] = useState(false);
 
@@ -64,7 +65,7 @@ function HoaDonBan() {
 
     useEffect(() => {
         fetchHoaDonBans();
-    }, [searchParams, show, searchValue]);
+    }, [searchParams, reload, searchValue]);
 
     const formatDate = (dateString) => {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
@@ -76,29 +77,41 @@ function HoaDonBan() {
             ? 'Bạn có chắc muốn hủy duyệt đơn hàng này?'
             : 'Bạn có chắc muốn duyệt đơn hàng này?';
         if (window.confirm(confirmationMessage)) {
-            const newStatus = !currentStatus;
-            const data = {
-                TrangThaiDuyet: newStatus,
-            };
-            hoadonbanService.updateHoaDonBan(data, id).then((res) => {
-                toast.success('Cập nhật trạng thái duyệt thành công!', {
-                    position: 'top-right',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'light',
-                });
-            });
+            const newStatus = currentStatus ? 0 : 1;
+            hoadonbanService
+                .updateHoaDonBan({ TrangThaiDuyet: newStatus }, id)
+                .then(() => {
+                    toast.success('Cập nhật duyệt thành công!');
+                    // Cập nhật luôn state để UI ăn ngay
+                    setHoaDonBans((prev) => ({
+                        ...prev,
+                        rows: prev.rows.map((x) => (x.id === id ? { ...x, TrangThaiDuyet: newStatus } : x)),
+                    }));
+                    // Nếu bạn vẫn cần re-fetch (đồng bộ với server), toggle reload
+                    setReload((r) => !r);
+                })
+                .catch(() => toast.error('Cập nhật thất bại'));
         }
     };
 
-    useEffect(() => {
-        hoadonbans.rows.forEach((item) => {
-            handleTTChange(item.id, item.Shipped, item.TrangThaiDuyet, item.TrangThai);
-        });
-    }, [hoadonbans]);
+    // useEffect(() => {
+    //     hoadonbans.rows.forEach((item) => {
+    //         handleTTChange(item.id, item.Shipped, item.TrangThaiDuyet, item.TrangThai);
+    //     });
+    // }, [hoadonbans]);
+
+    const getOrderStatus = (item) => {
+        if (item.TrangThai === 'Hoàn thành') {
+            return 'Hoàn thành';
+        }
+        if (!item.TrangThaiDuyet) {
+            return 'Chưa duyệt';
+        }
+        if (!item.Shipped) {
+            return 'Đã duyệt, chờ vận chuyển';
+        }
+        return 'Đơn hàng đang trên đường giao';
+    };
 
     const handleTTChange = (id, currentShipped, currentStatus, currentTrangThai) => {
         if (currentTrangThai === 'Hoàn thành') {
@@ -134,21 +147,18 @@ function HoaDonBan() {
             ? 'Bạn có chắc muốn hủy vận chuyển đơn hàng này?'
             : 'Bạn có chắc muốn vận chuyển đơn hàng này?';
         if (window.confirm(confirmationMessage)) {
-            const newShipped = !currentShipped;
-            const data = {
-                Shipped: newShipped,
-            };
-            hoadonbanService.updateHoaDonBan(data, id).then((res) => {
-                toast.success('Cập nhật trạng thái vận chuyển thành công!', {
-                    position: 'top-right',
-                    autoClose: 5000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'light',
-                });
-            });
+            const newShipped = currentShipped ? 0 : 1;
+            hoadonbanService
+                .updateHoaDonBan({ Shipped: newShipped }, id)
+                .then(() => {
+                    toast.success('Cập nhật vận chuyển thành công!');
+                    setHoaDonBans((prev) => ({
+                        ...prev,
+                        rows: prev.rows.map((x) => (x.id === id ? { ...x, Shipped: newShipped } : x)),
+                    }));
+                    setReload((r) => !r);
+                })
+                .catch(() => toast.error('Cập nhật thất bại'));
         }
     };
     return (
@@ -221,7 +231,8 @@ function HoaDonBan() {
                                                     <div>{item.Shipped ? 'Đã vận chuyển' : 'Chưa vận chuyển'}</div>
                                                 </td>
                                                 <td>{formatDate(item.createdAt)}</td>
-                                                <td>{item.TrangThai}</td>
+                                                <td>{getOrderStatus(item)}</td>
+
                                                 <td>
                                                     <button
                                                         className="btn btn-primary"

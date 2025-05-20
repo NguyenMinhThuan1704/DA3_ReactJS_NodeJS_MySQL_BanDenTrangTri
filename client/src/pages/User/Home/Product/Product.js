@@ -5,7 +5,6 @@ import styles from './Product.module.scss';
 import { NavLink, useNavigate } from 'react-router-dom';
 import cartService from '../../../../services/cartService';
 import config from '~/config';
-import { getFirstImage } from '../../../getFirstImage';
 
 const cx = classNames.bind(styles);
 

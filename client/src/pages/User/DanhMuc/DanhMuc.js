@@ -7,6 +7,7 @@ import styles from './DanhMuc.module.scss';
 import NewProduct from '../Home/NewProduct';
 import Pagination from '../../../components/Pagination/Pagination';
 import sanphamService from '../../../services/sanphamService';
+import { getFirstImage } from '../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -50,17 +51,20 @@ function DanhMuc() {
 
             <div className={cx('new__product')} style={{ paddingTop: '10px' }}>
                 <div className={cx('row', 'new__product-item-wrapper', 'den_moi')}>
-                    {getCate.rows.map((newproduct) => (
-                        <NewProduct
-                            key={newproduct.id}
-                            id={newproduct.id}
-                            img={newproduct.AnhDaiDien}
-                            name={newproduct.TenSanPham}
-                            priceOld={newproduct.Gia}
-                            priceNew={newproduct.GiaGiam}
-                            sale="30"
-                        />
-                    ))}
+                    {getCate.rows.map((newproduct) => {
+                        const firstUrl = getFirstImage(newproduct.AnhDaiDien);
+                        return (
+                            <NewProduct
+                                key={newproduct.id}
+                                id={newproduct.id}
+                                img={firstUrl}
+                                name={newproduct.TenSanPham}
+                                priceOld={newproduct.Gia}
+                                priceNew={newproduct.GiaGiam}
+                                sale="30"
+                            />
+                        );
+                    })}
                 </div>
             </div>
 

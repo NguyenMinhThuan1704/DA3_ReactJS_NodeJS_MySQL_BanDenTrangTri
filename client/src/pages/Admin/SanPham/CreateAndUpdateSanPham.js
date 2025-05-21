@@ -42,11 +42,23 @@ function CreateAndUpdateSanPham({ dataRaw, isShow, onSave, onClose }) {
     // khi dataRaw thay đổi, parse AnhDaiDien thành mảng
     useEffect(() => {
         if (dataRaw) {
-            const existingImages = Array.isArray(dataRaw.AnhDaiDien)
-                ? dataRaw.AnhDaiDien
-                : dataRaw.AnhDaiDien
-                ? JSON.parse(dataRaw.AnhDaiDien)
-                : [];
+            let existingImages = [];
+            if (Array.isArray(dataRaw.AnhDaiDien)) {
+                existingImages = dataRaw.AnhDaiDien;
+            } else if (typeof dataRaw.AnhDaiDien === 'string' && dataRaw.AnhDaiDien.trim() !== '') {
+                try {
+                    existingImages = JSON.parse(dataRaw.AnhDaiDien);
+                } catch (e) {
+                    // Nếu không phải JSON, hãy kiểm tra nếu nó là 1 url
+                    if (dataRaw.AnhDaiDien.startsWith('http')) {
+                        existingImages = [dataRaw.AnhDaiDien];
+                    } else {
+                        existingImages = [];
+                    }
+                }
+            } else {
+                existingImages = [];
+            }
 
             setData({
                 id: dataRaw.id ?? 0,

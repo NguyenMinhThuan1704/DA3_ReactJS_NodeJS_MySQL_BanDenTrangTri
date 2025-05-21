@@ -4,28 +4,18 @@ class DanhGiaController {
   // API
   // [GET] /DanhGias
   getDanhGia = async (req, res) => {
+    const { MaSanPham, MaKhachHang } = req.query;
     const page = req.query.page;
     const pageSize = req.query.pageSize;
+
+    let where = {};
+    if (MaSanPham) where.MaSanPham = MaSanPham;
+    if (MaKhachHang) where.MaKhachHang = MaKhachHang;
+
     const data = await danhgiaService.find({
-      page: page,
+      page,
       pageSize,
-      //   where: {id}
-    });
-
-    if (data.code === -1) {
-      return res.status(500).json(data);
-    }
-
-    return res.status(200).json(data);
-  };
-
-  // [GET] /DanhGias theo mã
-  getDanhGiaByID = async (req, res) => {
-    const id = req.params.id;
-    const data = await danhgiaService.find({
-      where: {
-        id: id,
-      },
+      where,
     });
 
     if (data.code === -1) {
@@ -35,16 +25,12 @@ class DanhGiaController {
     res.status(200).json(data);
   };
 
-  // [GET] /DanhGias theo mã sản phẩm
-  getDanhGiaByProduct = async (req, res) => {
-    const MaSanPham = req.params.MaSanPham;
-    const page = req.query.page;
-    const pageSize = req.query.pageSize;
+  // [GET] /DanhGias theo mã
+  getDanhGiaByID = async (req, res) => {
+    const id = req.params.id;
     const data = await danhgiaService.find({
-      page: page,
-      pageSize,
       where: {
-        MaLoaiDanhGia: MaLoaiDanhGia,
+        id: id,
       },
     });
 

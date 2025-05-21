@@ -13,11 +13,16 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: "MaSanPham",
         as: "sanPham",
       });
+      DanhGia.belongsTo(models.TaiKhoan, {
+        foreignKey: "MaKhachHang",
+        as: "taiKhoan",
+      });
     }
   }
   DanhGia.init(
     {
       MaSanPham: DataTypes.INTEGER,
+      MaKhachHang: DataTypes.INTEGER,
       MoTa: DataTypes.STRING,
       SoSao: DataTypes.INTEGER,
     },

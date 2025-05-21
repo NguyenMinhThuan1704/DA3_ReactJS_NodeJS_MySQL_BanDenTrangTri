@@ -1,10 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './DonHang.module.scss';
-
-import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Pagination from '../../../components/Pagination/Pagination';
 import hoadonbanService from '../../../services/hoadonbanService';
@@ -12,6 +10,8 @@ import chitiethoadonbanService from '../../../services/chitiethoadonbanService';
 import sanphamService from '../../../services/sanphamService';
 import numeral from 'numeral';
 import { getFirstImage } from '../../getFirstImage';
+import danhgiaService from '../../../services/danhgiaService';
+import { toast, ToastContainer } from 'react-toastify';
 
 const cx = classNames.bind(styles);
 
@@ -21,6 +21,8 @@ function DonHang() {
     const POLL_INTERVAL = 3000;
     const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
     const id = taikhoan.id;
+    const [reviews, setReviews] = useState({});
+    const [reviewedProducts, setReviewedProducts] = useState({});
 
     const fetchHoaDonBans = async () => {
         const page = Number(searchParams.get('page'));
@@ -51,7 +53,6 @@ function DonHang() {
 
                 const processedDataArray = Object.values(processedData);
 
-                // Fetch product details
                 const productDetailsPromises = processedDataArray.map((product) =>
                     sanphamService.getSanPhamById(product.MaSanPham),
                 );
@@ -96,8 +97,91 @@ function DonHang() {
         return () => clearInterval(timer);
     }, [searchParams]);
 
+    useEffect(() => {
+        if (chiTietHoaDons.length > 0) {
+            const fetchReviewedProducts = async () => {
+                const promises = chiTietHoaDons.map((product) =>
+                    danhgiaService.getDanhGia({
+                        page: 1,
+                        MaSanPham: product.MaSanPham,
+                        MaKhachHang: id,
+                    }),
+                );
+                const results = await Promise.all(promises);
+                const map = {};
+                chiTietHoaDons.forEach((product, idx) => {
+                    map[product.MaSanPham] = results[idx].data.data.rows.length > 0;
+                });
+                setReviewedProducts(map);
+            };
+            fetchReviewedProducts();
+        }
+    }, [chiTietHoaDons, id]);
+
+    const handleReviewChange = (MaSanPham, value) => {
+        setReviews((prev) => ({
+            ...prev,
+            [MaSanPham]: {
+                ...prev[MaSanPham],
+                content: value,
+            },
+        }));
+    };
+
+    const handleStarChange = (MaSanPham, value) => {
+        setReviews((prev) => ({
+            ...prev,
+            [MaSanPham]: {
+                ...prev[MaSanPham],
+                star: value,
+            },
+        }));
+    };
+
+    const handleReviewSubmit = async (product) => {
+        const MaSanPham = product.MaSanPham;
+        const data = {
+            MaSanPham: MaSanPham,
+            MoTa: reviews[MaSanPham]?.content || '',
+            SoSao: reviews[MaSanPham]?.star || 5,
+            MaKhachHang: id,
+        };
+        try {
+            await danhgiaService.createDanhGia(data);
+            toast.success('Đánh giá thành công!', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+            setReviews((prev) => ({
+                ...prev,
+                [MaSanPham]: { content: '', star: 5 },
+            }));
+            setReviewedProducts((prev) => ({
+                ...prev,
+                [MaSanPham]: true,
+            }));
+        } catch (error) {
+            toast.error('Đánh giá thất bại!', {
+                position: 'top-right',
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: 'light',
+            });
+        }
+    };
+
     return (
         <div className={cx('container', 'grid', 'wide')}>
+            <ToastContainer />
+
             <div
                 className={cx('row', 'grid', 'wide', 'wrapper')}
                 style={{ justifyContent: 'space-between', margin: '30px 0' }}
@@ -172,6 +256,66 @@ function DonHang() {
                                                     Hoàn thành
                                                 </button>
                                             ) : null}
+                                            {product.TrangThaiDuyet === 1 &&
+                                                product.Shipped === 1 &&
+                                                product.TrangThai === 'Hoàn thành' &&
+                                                (reviewedProducts[product.MaSanPham] ? (
+                                                    <div
+                                                        style={{
+                                                            color: 'green',
+                                                            marginTop: 8,
+                                                            fontStyle: 'italic',
+                                                            minWidth: '240px',
+                                                        }}
+                                                    >
+                                                        Bạn đã đánh giá sản phẩm này!
+                                                    </div>
+                                                ) : (
+                                                    <div
+                                                        style={{ marginTop: 8, textAlign: 'right', minWidth: '240px' }}
+                                                    >
+                                                        <textarea
+                                                            placeholder="Nhập đánh giá của bạn..."
+                                                            value={reviews[product.MaSanPham]?.content || ''}
+                                                            onChange={(e) =>
+                                                                handleReviewChange(product.MaSanPham, e.target.value)
+                                                            }
+                                                            rows={3}
+                                                            style={{
+                                                                width: '100%',
+                                                                resize: 'vertical',
+                                                                padding: '4px',
+                                                            }}
+                                                        />
+                                                        <div style={{ marginBottom: 6 }}>
+                                                            <span>Chọn số sao: </span>
+                                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                                <label key={star} style={{ marginRight: 4 }}>
+                                                                    <input
+                                                                        type="radio"
+                                                                        name={`star_${product.MaSanPham}`}
+                                                                        value={star}
+                                                                        checked={
+                                                                            (reviews[product.MaSanPham]?.star || 5) ===
+                                                                            star
+                                                                        }
+                                                                        onChange={() =>
+                                                                            handleStarChange(product.MaSanPham, star)
+                                                                        }
+                                                                    />
+                                                                    <span style={{ color: '#f5a623' }}>★</span>
+                                                                </label>
+                                                            ))}
+                                                        </div>
+                                                        <button
+                                                            className={cx('buy-button')}
+                                                            style={{ background: '#007bff', color: '#fff' }}
+                                                            onClick={() => handleReviewSubmit(product)}
+                                                        >
+                                                            Đánh giá
+                                                        </button>
+                                                    </div>
+                                                ))}
                                         </div>
                                     </div>
                                 );

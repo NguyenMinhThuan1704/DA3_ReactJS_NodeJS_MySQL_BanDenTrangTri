@@ -14,11 +14,13 @@ import { useEffect, useState } from 'react';
 import classNames from 'classnames/bind';
 import styles from './SanPham.module.scss';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAdd, faBarcode, faEdit, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faAdd, faBarcode, faEdit, faEye, faTrash } from '@fortawesome/free-solid-svg-icons';
 import numeral from 'numeral';
 import Search from '../../../components/Search/Search';
 import Image from '../../../components/Image';
 import { getFirstImage } from '../../getFirstImage';
+import danhgiaService from '../../../services/danhgiaService';
+import ViewSanPhamModal from './ViewSanPhamModal';
 
 const cx = classNames.bind(styles);
 
@@ -38,6 +40,11 @@ function SanPham() {
     const [loaisanphams, setLoaiSanPhams] = useState([]);
 
     const [searchValue, setSearchValue] = useState('');
+
+    const [showView, setShowView] = useState(false);
+    const [viewData, setViewData] = useState(null);
+    const [reviewPage, setReviewPage] = useState(1);
+    const [danhgias, setDanhGias] = useState({ rows: [], count: 0 });
 
     const handleOKDelete = () => {
         sanphamService
@@ -102,29 +109,6 @@ function SanPham() {
         setShow(false);
     };
 
-    // const fetchData = () => {
-    //     if (Number(searchParams.get('page')) > 0 && !(show || isShowDelete)) {
-    //         const page = Number(searchParams.get('page'));
-    //         Promise.all([sanphamService.getSanPham({ page }), loaispService.getCategoryAll()])
-    //             .then(([sanphamRes, loaispRes]) => {
-    //                 const sanphams = sanphamRes.data.data.rows;
-    //                 const loaisps = loaispRes.data.data.rows;
-
-    //                 const mergedData = sanphams.map((sp) => {
-    //                     const loaiSP = loaisps.find((lsp) => lsp.id === sp.MaLoaiSanPham);
-    //                     return {
-    //                         ...sp,
-    //                         TenLoaiSanPham: loaiSP ? loaiSP.TenLoaiSanPham : 'Unknown',
-    //                     };
-    //                 });
-
-    //                 setSanPhams({ rows: mergedData, count: sanphamRes.data.data.count });
-    //                 setLoaiSanPhams(loaisps);
-    //             })
-    //             .catch((err) => console.error(err));
-    //     }
-    // };
-
     const fetchDataSearch = () => {
         if (Number(searchParams.get('page')) > 0 && !(show || isShowDelete)) {
             Promise.all([
@@ -183,6 +167,27 @@ function SanPham() {
         const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
         return new Date(dateString).toLocaleDateString(undefined, options);
     };
+
+    const handleView = (item) => {
+        setViewData(item);
+        setShowView(true);
+        setReviewPage(1);
+    };
+
+    const fetchDanhGias = (MaSanPham, page = 1) => {
+        danhgiaService.getDanhGia({ page, MaSanPham }).then((res) => {
+            setDanhGias({
+                rows: res.data.data.rows,
+                count: res.data.data.count,
+            });
+        });
+    };
+
+    useEffect(() => {
+        if (showView && viewData) {
+            fetchDanhGias(viewData.id, reviewPage);
+        }
+    }, [showView, viewData, reviewPage]);
 
     return (
         <div className={cx('col-12', 'col-s-12', 'content')}>
@@ -252,6 +257,9 @@ function SanPham() {
                                                     <td>{formatDate(item.createdAt)}</td>
                                                     <td>{formatDate(item.updatedAt)}</td>
                                                     <td>
+                                                        <button onClick={() => handleView(item)}>
+                                                            <FontAwesomeIcon icon={faEye} title="Xem chi tiết" />
+                                                        </button>
                                                         <button onClick={() => handleAdd(item)}>
                                                             <FontAwesomeIcon icon={faAdd} title="Thêm" />
                                                         </button>
@@ -287,6 +295,17 @@ function SanPham() {
             </div>
             <CreateAndUpdateSanPham dataRaw={data} isShow={show} onSave={handleSave} onClose={handleClose} />
             <Delete isShow={isShowDelete} onOk={handleOKDelete} onClose={() => setIsShowDelete(false)} />
+            <ViewSanPhamModal
+                show={showView}
+                onHide={() => setShowView(false)}
+                sanPham={viewData}
+                danhgias={danhgias}
+                page={reviewPage}
+                pageSize={10}
+                total={danhgias.count}
+                onPageChange={setReviewPage}
+            />
+
             <ToastContainer
                 position="top-right"
                 autoClose={5000}

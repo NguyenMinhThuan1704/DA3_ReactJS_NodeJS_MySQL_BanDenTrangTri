@@ -292,17 +292,20 @@ function Home() {
                     </div>
 
                     <div className={cx('app__container-item-product', 'col', 'l-2-8', 'c-12', 'den_chum')}>
-                        {denmams.map(({ id, AnhDaiDien, TenSanPham, Gia, GiaGiam }) => (
-                            <Product
-                                key={id}
-                                id={id}
-                                img={AnhDaiDien}
-                                name={TenSanPham}
-                                priceOld={Gia}
-                                priceNew={GiaGiam}
-                                sale="30"
-                            />
-                        ))}
+                        {denmams.map(({ id, AnhDaiDien, TenSanPham, Gia, GiaGiam }) => {
+                            const firstUrl = getFirstImage(AnhDaiDien);
+                            return (
+                                <Product
+                                    key={id}
+                                    id={id}
+                                    img={firstUrl}
+                                    name={TenSanPham}
+                                    priceOld={Gia}
+                                    priceNew={GiaGiam}
+                                    sale="30"
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -331,17 +334,20 @@ function Home() {
                     </div>
 
                     <div className={cx('app__container-item-product', 'col', 'l-2-8', 'c-12', 'den_chum')}>
-                        {denthas.map(({ id, AnhDaiDien, TenSanPham, Gia, GiaGiam }) => (
-                            <Product
-                                key={id}
-                                id={id}
-                                img={AnhDaiDien}
-                                name={TenSanPham}
-                                priceOld={Gia}
-                                priceNew={GiaGiam}
-                                sale="30"
-                            />
-                        ))}
+                        {denthas.map(({ id, AnhDaiDien, TenSanPham, Gia, GiaGiam }) => {
+                            const firstUrl = getFirstImage(AnhDaiDien);
+                            return (
+                                <Product
+                                    key={id}
+                                    id={id}
+                                    img={firstUrl}
+                                    name={TenSanPham}
+                                    priceOld={Gia}
+                                    priceNew={GiaGiam}
+                                    sale="30"
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             </div>

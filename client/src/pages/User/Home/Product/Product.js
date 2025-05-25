@@ -5,6 +5,7 @@ import styles from './Product.module.scss';
 import { NavLink, useNavigate } from 'react-router-dom';
 import cartService from '../../../../services/cartService';
 import config from '~/config';
+import { getFirstImage } from '../../../getFirstImage';
 
 const cx = classNames.bind(styles);
 
@@ -67,12 +68,14 @@ function Product({ id, img, name, priceOld, priceNew, sale }) {
         return price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
     };
 
+    const firstUrl = getFirstImage(img);
+
     return (
         <div className={cx('col', 'l-3', 'c-6', 'item-product-wrap')}>
             <ToastContainer />
             <div className={cx('new__product-img-wrapper', 'item-product')}>
                 <NavLink to={`/user/sanpham/${id}`}>
-                    <img src={img} alt={name} className={cx('new__product-img', 'item-product-img')} />
+                    <img src={firstUrl} alt={name} className={cx('new__product-img', 'item-product-img')} />
                 </NavLink>
             </div>
 

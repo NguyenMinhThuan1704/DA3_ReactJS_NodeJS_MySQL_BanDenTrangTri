@@ -5,6 +5,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import config from '~/config';
 import cartService from '../../../../services/cartService';
+import { getFirstImage } from '../../../getFirstImage';
 
 // import numeral from 'numeral';
 
@@ -67,11 +68,12 @@ function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
             });
         }
     };
+    const firstUrl = getFirstImage(img);
     return (
         <div className={cx('new__product-item', 'col', 'l-3', 'm-4', 'c-6')}>
             <div className={cx('new__product-img-wrapper')}>
                 <NavLink to={`/user/sanpham/${id}`}>
-                    <img src={img} alt={name} className={cx('new__product-img')} />
+                    <img src={firstUrl} alt={name} className={cx('new__product-img')} />
                 </NavLink>
             </div>
 

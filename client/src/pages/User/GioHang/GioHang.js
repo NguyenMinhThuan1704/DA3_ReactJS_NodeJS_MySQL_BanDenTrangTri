@@ -14,6 +14,7 @@ import hoadonbanService from '../../../services/hoadonbanService';
 import chitiethoadonbanService from '../../../services/chitiethoadonbanService';
 import config from '~/config';
 import { getFirstImage } from '../../getFirstImage';
+import { createPaymentLink } from '../../../services/qrcode';
 
 const cx = classNames.bind(styles);
 
@@ -21,6 +22,7 @@ function GioHang() {
     const [carts, setCarts] = useState({ rows: [], count: 0 });
     const [totalPrice, setTotalPrice] = useState(0);
     const navigate = useNavigate();
+    const [paymentMethod, setPaymentMethod] = useState('cash');
 
     // localStorage.setItem('soluong', carts.rows.length);
 
@@ -122,6 +124,18 @@ function GioHang() {
             Email: Yup.string().email('Email không hợp lệ'),
         }),
         onSubmit: async (values) => {
+            if (paymentMethod === 'online') {
+                localStorage.setItem('checkoutInfo', JSON.stringify(values));
+                try {
+                    const response = await createPaymentLink();
+                    if (response && response.data && response.data.checkoutUrl) {
+                        window.location.href = response.data.checkoutUrl;
+                    } else {
+                        alert('Không nhận được link thanh toán từ hệ thống!');
+                    }
+                } catch (error) {}
+                return;
+            }
             const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
             const id = taikhoan.id;
             const hoaDonData = {
@@ -207,7 +221,12 @@ function GioHang() {
                         </div>
                     </div>
 
-                    <form onSubmit={formik.handleSubmit}>
+                    <form
+                        onSubmit={formik.handleSubmit}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') e.preventDefault();
+                        }}
+                    >
                         <div
                             className={cx('row', 'thongtin')}
                             style={{ display: 'flex', flexWrap: 'wrap', marginRight: '-15px', marginLeft: '-15px' }}
@@ -392,11 +411,25 @@ function GioHang() {
                         <div className={cx('title_thanhtoan')}>Phương thức thanh toán</div>
                         <ul className={cx('payment__methonds')}>
                             <li className={cx('payment__methonds-item')}>
-                                <input type="radio" name="paymentMethod" id="cashPayment" />
+                                <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="cashPayment"
+                                    value="cash"
+                                    checked={paymentMethod === 'cash'}
+                                    onChange={() => setPaymentMethod('cash')}
+                                />
                                 <label htmlFor="cashPayment">Thanh toán bằng tiền mặt</label>
                             </li>
                             <li className={cx('payment__methonds-item')}>
-                                <input type="radio" name="paymentMethod" id="onlinePayment" />
+                                <input
+                                    type="radio"
+                                    name="paymentMethod"
+                                    id="onlinePayment"
+                                    value="online"
+                                    checked={paymentMethod === 'online'}
+                                    onChange={() => setPaymentMethod('online')}
+                                />
                                 <label htmlFor="onlinePayment">Thanh toán online bằng thẻ visa, master, ATM</label>
                             </li>
                         </ul>

@@ -23,6 +23,10 @@ module.exports = (sequelize, DataTypes) => {
     {
       MaSanPham: DataTypes.INTEGER,
       MaNhaPhanPhoi: DataTypes.INTEGER,
+      Style: DataTypes.STRING,
+      RoomType: DataTypes.STRING,
+      SizeCategory: DataTypes.STRING,
+      DominantColors: DataTypes.STRING,
       MoTa: DataTypes.STRING,
       ChiTiet: DataTypes.STRING,
     },

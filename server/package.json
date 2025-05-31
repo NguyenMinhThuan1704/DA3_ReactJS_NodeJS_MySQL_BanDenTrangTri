@@ -10,7 +10,9 @@
   "author": "hoafn0730",
   "license": "ISC",
   "dependencies": {
+    "@payos/node": "^1.0.10",
     "bcrypt": "^5.1.1",
+    "color-namer": "^1.4.0",
     "color-thief-ts": "^1.1.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",

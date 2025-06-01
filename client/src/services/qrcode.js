@@ -1,14 +1,20 @@
 import httpRequest from '~/utils/httpRequest';
 
-export const createPaymentLink = async () => {
+export const createPaymentLink = async ({ checkoutInfo, totalPrice, maKH }) => {
     try {
         const response = await httpRequest.post('/payment-link', {
-            amount: 10000,
+            MaKH: maKH,
+            TenKH: checkoutInfo.TenKH,
+            SoDienThoai: checkoutInfo.SoDienThoai,
+            DiaChi: checkoutInfo.DiaChi,
+            Email: checkoutInfo.Email,
+            TongGia: totalPrice,
         });
 
-        window.location.href = response.data.checkoutUrl;
+        return response;
     } catch (error) {
         console.error('Lỗi khi tạo liên kết thanh toán:', error);
         alert('Có lỗi xảy ra khi tạo liên kết thanh toán. Vui lòng thử lại.');
+        return null;
     }
 };

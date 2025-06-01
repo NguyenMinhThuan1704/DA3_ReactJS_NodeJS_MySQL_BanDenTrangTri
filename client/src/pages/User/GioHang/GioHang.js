@@ -24,8 +24,6 @@ function GioHang() {
     const navigate = useNavigate();
     const [paymentMethod, setPaymentMethod] = useState('cash');
 
-    // localStorage.setItem('soluong', carts.rows.length);
-
     const fetchData = () => {
         const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
         const id = taikhoan.id;
@@ -86,7 +84,6 @@ function GioHang() {
     };
 
     useEffect(() => {
-        // Tính toán tổng giá trị của giỏ hàng khi có sự thay đổi trong sản phẩm hoặc số lượng
         const total = carts.rows.reduce((accumulator, currentItem) => {
             return accumulator + currentItem.Gia * currentItem.SoLuong;
         }, 0);
@@ -100,7 +97,6 @@ function GioHang() {
             };
             cartService.updateCart(id, data);
 
-            // Cập nhật số lượng sản phẩm trong state
             const updatedCarts = carts.rows.map((item) => (item.id === id ? { ...item, SoLuong: newSoLuong } : item));
             setCarts({ ...carts, rows: updatedCarts });
         } catch (error) {
@@ -125,17 +121,30 @@ function GioHang() {
         }),
         onSubmit: async (values) => {
             if (paymentMethod === 'online') {
-                localStorage.setItem('checkoutInfo', JSON.stringify(values));
+                const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+                const id = taikhoan.id;
+                const checkoutInfo = {
+                    TenKH: values.TenKH,
+                    SoDienThoai: values.SoDienThoai,
+                    DiaChi: values.DiaChi,
+                    Email: values.Email,
+                };
+
                 try {
-                    const response = await createPaymentLink();
+                    const response = await createPaymentLink({
+                        checkoutInfo,
+                        totalPrice,
+                        maKH: id,
+                    });
                     if (response && response.data && response.data.checkoutUrl) {
                         window.location.href = response.data.checkoutUrl;
                     } else {
-                        alert('Không nhận được link thanh toán từ hệ thống!');
+                        console.log('Không nhận được link thanh toán từ hệ thống!');
                     }
                 } catch (error) {}
                 return;
             }
+
             const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
             const id = taikhoan.id;
             const hoaDonData = {
@@ -148,6 +157,8 @@ function GioHang() {
                 Shipped: false,
                 TongGia: totalPrice,
                 TrangThai: 'Chưa duyệt',
+                HinhThucThanhToan: paymentMethod === 'cash' ? 'Tiền mặt' : 'QR/Online',
+                TrangThaiThanhToan: false,
             };
             const hoaDonResponse = await hoadonbanService.createHoaDonBan(hoaDonData);
             try {

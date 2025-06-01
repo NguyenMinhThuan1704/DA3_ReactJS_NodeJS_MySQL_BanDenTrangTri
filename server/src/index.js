@@ -10,6 +10,8 @@ const { connect } = require("./config/connection");
 const PayOS = require("@payos/node");
 const namer = require("color-namer");
 const db = require("./models");
+const hoadonbanService = require("./services/hoadonbanService");
+const cartService = require("./services/cartService");
 const payos = new PayOS(
   process.env.PAYOS_CLIENT_ID,
   process.env.PAYOS_SECRET_ID,
@@ -35,56 +37,88 @@ const YOUR_DOMAIN = "http://localhost:3000";
 
 app.post("/payment-link", async (req, res) => {
   try {
+    const randomOrderCode = Math.floor(1000000000 + Math.random() * 9000000000);
+    const { MaKH, TenKH, SoDienThoai, DiaChi, Email, TongGia } = req.body;
+
+    await hoadonbanService.create({
+      MaKH: MaKH,
+      TenKH: TenKH,
+      SoDienThoai: SoDienThoai,
+      DiaChi: DiaChi,
+      Email: Email,
+      TrangThaiDuyet: false,
+      Shipped: false,
+      TongGia: TongGia,
+      TrangThai: "Chưa duyệt",
+      HinhThucThanhToan: "QR/Online",
+      TrangThaiThanhToan: false,
+      order_code: randomOrderCode,
+    });
+
     const order = {
       amount: 10000,
-      description: "Thanh toán VIP",
-      orderCode: 1111111111,
+      description: "Thanh toán đơn hàng",
+      orderCode: randomOrderCode,
       returnUrl: `${YOUR_DOMAIN}`,
-      cancelUrl: `${YOUR_DOMAIN}/cancel`,
+      cancelUrl: `${YOUR_DOMAIN}/user/giohang`,
     };
 
     const paymentLink = await payos.createPaymentLink(order);
 
-    // Sử dụng req.user.user_id thay vì req.user.id
-    // await db.Payment.create({
-    //   user_id: req.user.user_id,
-    //   amount: order.amount,
-    //   status: "success",
-    //   order_code: 1111111111,
-    // });
-
     res.json({ checkoutUrl: paymentLink.checkoutUrl });
   } catch (error) {
-    console.error("Error creating payment link:", error);
     res.status(500).json({ message: "Error creating payment link" });
   }
 });
 
+app.get("/receive-hook", (req, res) => {
+  console.log("GET /receive-hook – PayOS đang verify URL");
+  return res.sendStatus(200);
+});
+
 app.post("/receive-hook", async (req, res) => {
   try {
-    console.log("vao roi");
+    console.log(req.body);
 
-    console.log("Webhook received:", req.body);
-    const { orderCode } = req.body.data;
-    console.log("Order code:", orderCode);
+    if (!req.body.data || !req.body.data.orderCode) {
+      return res.sendStatus(200);
+    }
+    const { orderCode, desc, transactionDateTime } = req.body.data;
 
-    if (!orderCode)
-      return res.status(400).json({ message: "Order code is missing" });
+    if (desc === "PAID" || desc === "SUCCEEDED" || desc === "success") {
+      const hoaDon = await hoadonbanService.find({
+        where: {
+          order_code: orderCode,
+        },
+      });
+      console.log(hoaDon);
 
-    const payment = await db.Payment.findOne({
-      where: { order_code: orderCode },
-    });
-    if (!payment) return res.status(404).json({ message: "Payment not found" });
+      if (!hoaDon) {
+        return res.sendStatus(200);
+      }
 
-    await payment.update({ status: "success" });
-    const user = await db.User.findOne({ where: { user_id: payment.user_id } });
-    if (!user) return res.status(404).json({ message: "User not found" });
+      await hoadonbanService.update({
+        data: {
+          TrangThaiThanhToan: true,
+          ThoiGianThanhToan: transactionDateTime,
+        },
+        where: {
+          id: hoaDon.data[0].id,
+        },
+      });
 
-    await user.update({ is_vip: 1 });
-    return res.status(200).json({ message: "User upgraded to VIP" });
+      await cartService.delete({
+        where: {
+          MaTaiKhoan: hoaDon.data[0].MaKH,
+        },
+      });
+
+      return res.sendStatus(200);
+    }
+
+    return res.sendStatus(200);
   } catch (err) {
-    console.error(err);
-    return res.sendStatus(500);
+    return res.sendStatus(200);
   }
 });
 

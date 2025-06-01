@@ -50,14 +50,6 @@ function HoaDonBan() {
         }
     };
 
-    // useEffect(() => {
-    //     if (Number(searchParams.get('page')) > 0 && !(show || isShowDelete)) {
-    //         duanthuchienService.searchDuAnThucHien({ page: Number(searchParams.get('page')), value: searchValue }).then((res) => {
-    //             setDuAns(res.data.data);
-    //         });
-    //     }
-    // }, [searchParams, show, isShowDelete, searchValue]);
-
     const handleSearchChange = (event) => {
         const { value } = event.target;
         setSearchValue(value);
@@ -78,27 +70,23 @@ function HoaDonBan() {
             : 'Bạn có chắc muốn duyệt đơn hàng này?';
         if (window.confirm(confirmationMessage)) {
             const newStatus = currentStatus ? 0 : 1;
+            const newTrangThai = newStatus === 1 ? 'Đã duyệt, chờ vận chuyển' : 'Chưa duyệt';
+
             hoadonbanService
-                .updateHoaDonBan({ TrangThaiDuyet: newStatus }, id)
+                .updateHoaDonBan({ TrangThaiDuyet: newStatus, TrangThai: newTrangThai }, id)
                 .then(() => {
                     toast.success('Cập nhật duyệt thành công!');
-                    // Cập nhật luôn state để UI ăn ngay
                     setHoaDonBans((prev) => ({
                         ...prev,
-                        rows: prev.rows.map((x) => (x.id === id ? { ...x, TrangThaiDuyet: newStatus } : x)),
+                        rows: prev.rows.map((x) =>
+                            x.id === id ? { ...x, TrangThaiDuyet: newStatus, TrangThai: newTrangThai } : x,
+                        ),
                     }));
-                    // Nếu bạn vẫn cần re-fetch (đồng bộ với server), toggle reload
                     setReload((r) => !r);
                 })
                 .catch(() => toast.error('Cập nhật thất bại'));
         }
     };
-
-    // useEffect(() => {
-    //     hoadonbans.rows.forEach((item) => {
-    //         handleTTChange(item.id, item.Shipped, item.TrangThaiDuyet, item.TrangThai);
-    //     });
-    // }, [hoadonbans]);
 
     const getOrderStatus = (item) => {
         if (item.TrangThai === 'Hoàn thành') {
@@ -113,31 +101,6 @@ function HoaDonBan() {
         return 'Đơn hàng đang trên đường giao';
     };
 
-    const handleTTChange = (id, currentShipped, currentStatus, currentTrangThai) => {
-        if (currentTrangThai === 'Hoàn thành') {
-            return;
-        }
-
-        if (currentStatus === 0) {
-            const data = {
-                TrangThai: 'Chưa duyệt',
-            };
-            hoadonbanService.updateHoaDonBan(data, id);
-        } else {
-            if (currentShipped === 0) {
-                const data = {
-                    TrangThai: 'Đã duyệt, chờ vận chuyển',
-                };
-                hoadonbanService.updateHoaDonBan(data, id);
-            } else {
-                const data = {
-                    TrangThai: 'Đơn hàng đang trên đường giao',
-                };
-                hoadonbanService.updateHoaDonBan(data, id);
-            }
-        }
-    };
-
     const handleShippedChange = (id, currentShipped, currentStatus) => {
         if (!currentStatus) {
             window.alert('Bạn phải duyệt đơn hàng trước khi vận chuyển.');
@@ -148,19 +111,32 @@ function HoaDonBan() {
             : 'Bạn có chắc muốn vận chuyển đơn hàng này?';
         if (window.confirm(confirmationMessage)) {
             const newShipped = currentShipped ? 0 : 1;
+            const updateData =
+                newShipped === 1
+                    ? { Shipped: newShipped, TrangThai: 'Đơn hàng đang trên đường giao' }
+                    : { Shipped: newShipped, TrangThai: 'Đã duyệt, chờ vận chuyển' };
             hoadonbanService
-                .updateHoaDonBan({ Shipped: newShipped }, id)
+                .updateHoaDonBan(updateData, id)
                 .then(() => {
                     toast.success('Cập nhật vận chuyển thành công!');
                     setHoaDonBans((prev) => ({
                         ...prev,
-                        rows: prev.rows.map((x) => (x.id === id ? { ...x, Shipped: newShipped } : x)),
+                        rows: prev.rows.map((x) =>
+                            x.id === id
+                                ? {
+                                      ...x,
+                                      Shipped: newShipped,
+                                      ...(newShipped === 1 ? { TrangThai: 'Đơn hàng đang trên đường giao' } : {}),
+                                  }
+                                : x,
+                        ),
                     }));
                     setReload((r) => !r);
                 })
                 .catch(() => toast.error('Cập nhật thất bại'));
         }
     };
+
     return (
         <div className={cx('col-12', 'col-s-12', 'content')}>
             <div className={cx('col-12', 'col-s-12', 'content')}>
@@ -189,7 +165,7 @@ function HoaDonBan() {
                                         <th>Tổng tiền</th>
                                         <th>Trạng thái duyệt</th>
                                         <th>Vận chuyển</th>
-                                        <th>Ngày tạo</th>
+                                        <th>Thanh Toán</th>
                                         <th>Trạng thái đơn hàng</th>
                                         <th>Thao tác</th>
                                     </tr>
@@ -230,7 +206,7 @@ function HoaDonBan() {
                                                     />
                                                     <div>{item.Shipped ? 'Đã vận chuyển' : 'Chưa vận chuyển'}</div>
                                                 </td>
-                                                <td>{formatDate(item.createdAt)}</td>
+                                                <td>{item.TrangThaiThanhToan ? 'Đã thanh toán' : 'Chưa thanh toán'}</td>
                                                 <td>{getOrderStatus(item)}</td>
 
                                                 <td>

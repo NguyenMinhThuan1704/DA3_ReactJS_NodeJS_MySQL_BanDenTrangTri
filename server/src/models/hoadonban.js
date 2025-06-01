@@ -26,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
       Shipped: DataTypes.BOOLEAN,
       TongGia: DataTypes.INTEGER,
       TrangThai: DataTypes.STRING,
+      HinhThucThanhToan: { type: DataTypes.STRING, defaultValue: "COD" },
+      TrangThaiThanhToan: { type: DataTypes.BOOLEAN, defaultValue: false },
+      ThoiGianThanhToan: { type: DataTypes.DATE, allowNull: true },
+      order_code: { type: DataTypes.BIGINT, allowNull: true },
     },
     {
       sequelize,

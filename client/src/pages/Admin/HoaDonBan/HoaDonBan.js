@@ -59,10 +59,10 @@ function HoaDonBan() {
         fetchHoaDonBans();
     }, [searchParams, reload, searchValue]);
 
-    const formatDate = (dateString) => {
-        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
-        return new Date(dateString).toLocaleDateString(undefined, options);
-    };
+    // const formatDate = (dateString) => {
+    //     const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+    //     return new Date(dateString).toLocaleDateString(undefined, options);
+    // };
 
     const handleStatusChange = (id, currentStatus) => {
         const confirmationMessage = currentStatus
@@ -137,6 +137,18 @@ function HoaDonBan() {
         }
     };
 
+    const formatDateTime = (dateString) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        const yyyy = date.getFullYear();
+        const MM = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const HH = String(date.getHours()).padStart(2, '0');
+        const mm = String(date.getMinutes()).padStart(2, '0');
+        const ss = String(date.getSeconds()).padStart(2, '0');
+        return `${yyyy}-${MM}-${dd} ${HH}:${mm}:${ss}`;
+    };
+
     return (
         <div className={cx('col-12', 'col-s-12', 'content')}>
             <div className={cx('col-12', 'col-s-12', 'content')}>
@@ -157,7 +169,8 @@ function HoaDonBan() {
                             <table className="myTable">
                                 <thead>
                                     <tr style={{ textAlign: 'center' }}>
-                                        <th>Mã hóa đơn bán</th>
+                                        {/* <th>STT</th> */}
+                                        <th>Thời gian tạo</th>
                                         <th>Tên khách hàng</th>
                                         <th>Địa chỉ</th>
                                         <th>Số điện thoại</th>
@@ -172,9 +185,12 @@ function HoaDonBan() {
                                 </thead>
                                 <tbody>
                                     {hoadonbans.rows.length > 0 ? (
-                                        hoadonbans.rows.map((item) => (
+                                        hoadonbans.rows.map((item, index) => (
                                             <tr style={{ textAlign: 'center' }} key={item.id}>
-                                                <td>{item.id}</td>
+                                                {/* <td>
+                                                    {((Number(searchParams.get('page')) || 1) - 1) * 10 + index + 1}
+                                                </td> */}
+                                                <td>{formatDateTime(item.createdAt)}</td>
                                                 <td>{item.TenKH}</td>
                                                 <td>{item.DiaChi}</td>
                                                 <td>{item.SoDienThoai}</td>

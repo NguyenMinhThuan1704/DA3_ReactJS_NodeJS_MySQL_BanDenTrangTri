@@ -211,6 +211,8 @@ const methodsService = (Model) => {
           [attribute]: { [Op.like]: searchString },
         }));
 
+        const order = [["createdAt", "DESC"]];
+
         if (payload.page) {
           const page = +payload.page < 1 ? 1 : +payload.page;
           const pageSize = +payload.pageSize || 10;
@@ -222,6 +224,7 @@ const methodsService = (Model) => {
             },
             offset: skip,
             limit: pageSize,
+            order: order,
             raw: true,
           });
 
@@ -243,6 +246,7 @@ const methodsService = (Model) => {
             where: {
               [Op.or]: searchConditions,
             },
+            order: order,
             raw: true,
           });
 

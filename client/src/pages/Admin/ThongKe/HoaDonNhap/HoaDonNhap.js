@@ -94,6 +94,11 @@ function HoaDonNhap() {
         fetchData();
     };
 
+    const formatDate = (dateString) => {
+        const options = { year: 'numeric', month: '2-digit', day: '2-digit' };
+        return new Date(dateString).toLocaleDateString(undefined, options);
+    };
+
     return (
         <>
             <div className={cx('title')}>
@@ -184,7 +189,7 @@ function HoaDonNhap() {
                                         <td>{result.TenNhaPhanPhoi}</td>
                                         <td>{result.TenSanPham}</td>
                                         <td>{result.SoLuongCTHDN}</td>
-                                        <td>{result.createdAt}</td>
+                                        <td>{formatDate(result.createdAt)}</td>
                                         <td>{numeral(result.TongTienCTHDN).format('0,0')}đ</td>
                                     </tr>
                                 ))

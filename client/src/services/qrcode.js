@@ -1,6 +1,6 @@
 import httpRequest from '~/utils/httpRequest';
 
-export const createPaymentLink = async ({ checkoutInfo, totalPrice, maKH }) => {
+export const createPaymentLink = async ({ checkoutInfo, totalPrice, maKH, cartList }) => {
     try {
         const response = await httpRequest.post('/payment-link', {
             MaKH: maKH,
@@ -9,6 +9,7 @@ export const createPaymentLink = async ({ checkoutInfo, totalPrice, maKH }) => {
             DiaChi: checkoutInfo.DiaChi,
             Email: checkoutInfo.Email,
             TongGia: totalPrice,
+            cartList: cartList,
         });
 
         return response;

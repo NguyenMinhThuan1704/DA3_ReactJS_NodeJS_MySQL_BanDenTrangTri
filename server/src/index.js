@@ -11,6 +11,7 @@ const PayOS = require("@payos/node");
 const namer = require("color-namer");
 const db = require("./models");
 const hoadonbanService = require("./services/hoadonbanService");
+const chitiethoadonbanService = require("./services/chitiethoadonbanService");
 const cartService = require("./services/cartService");
 const payos = new PayOS(
   process.env.PAYOS_CLIENT_ID,
@@ -38,9 +39,10 @@ const YOUR_DOMAIN = "http://localhost:3000";
 app.post("/payment-link", async (req, res) => {
   try {
     const randomOrderCode = Math.floor(1000000000 + Math.random() * 9000000000);
-    const { MaKH, TenKH, SoDienThoai, DiaChi, Email, TongGia } = req.body;
+    const { MaKH, TenKH, SoDienThoai, DiaChi, Email, TongGia, cartList } =
+      req.body;
 
-    await hoadonbanService.create({
+    const createdOrder = await hoadonbanService.create({
       MaKH: MaKH,
       TenKH: TenKH,
       SoDienThoai: SoDienThoai,
@@ -55,6 +57,19 @@ app.post("/payment-link", async (req, res) => {
       order_code: randomOrderCode,
     });
 
+    const maHoaDonBan = createdOrder.data.dataValues.id;
+
+    cartList.forEach(async (item) => {
+      const chiTietHoaDonData = {
+        MaHoaDonBan: maHoaDonBan,
+        MaSanPham: item.MaSanPham,
+        SoLuongCTHDB: item.SoLuong,
+        GiaCTHDB: item.Gia,
+        TongGia: item.Gia * item.SoLuong,
+      };
+      await chitiethoadonbanService.create(chiTietHoaDonData);
+    });
+
     const order = {
       amount: 10000,
       description: "Thanh toán đơn hàng",
@@ -65,11 +80,48 @@ app.post("/payment-link", async (req, res) => {
 
     const paymentLink = await payos.createPaymentLink(order);
 
-    res.json({ checkoutUrl: paymentLink.checkoutUrl });
+    res.json({
+      checkoutUrl: paymentLink.checkoutUrl,
+      order_code: randomOrderCode,
+      maHoaDonBan: maHoaDonBan,
+    });
   } catch (error) {
     res.status(500).json({ message: "Error creating payment link" });
   }
 });
+
+// app.post("/cancel-payment-link", async (req, res) => {
+//   const { order_code } = req.body;
+//   console.log(order_code);
+//   try {
+//     const hoadonban = await hoadonbanService.find({
+//       where: {
+//         order_code: order_code,
+//       },
+//     });
+//     console.log(hoadonban);
+
+//     if (!hoadonban) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+//     const maHoaDonBan = hoadonban.id;
+
+//     await chitiethoadonbanService.destroy({
+//       where: {
+//         MaHoaDonBan: maHoaDonBan,
+//       },
+//     });
+//     await hoadonbanService.delete({
+//       where: {
+//         id: maHoaDonBan,
+//       },
+//     });
+
+//     res.json({ message: "Order cancelled and deleted" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error cancelling order" });
+//   }
+// });
 
 app.get("/receive-hook", (req, res) => {
   console.log("GET /receive-hook – PayOS đang verify URL");
@@ -78,8 +130,6 @@ app.get("/receive-hook", (req, res) => {
 
 app.post("/receive-hook", async (req, res) => {
   try {
-    console.log(req.body);
-
     if (!req.body.data || !req.body.data.orderCode) {
       return res.sendStatus(200);
     }
@@ -91,7 +141,6 @@ app.post("/receive-hook", async (req, res) => {
           order_code: orderCode,
         },
       });
-      console.log(hoaDon);
 
       if (!hoaDon) {
         return res.sendStatus(200);

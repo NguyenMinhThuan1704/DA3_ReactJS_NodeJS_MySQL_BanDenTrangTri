@@ -130,11 +130,20 @@ function GioHang() {
                     Email: values.Email,
                 };
 
+                const cartList = carts.rows.map((item) => ({
+                    MaSanPham: item.MaSanPham,
+                    TenSanPham: item.TenSanPham,
+                    SoLuong: item.SoLuong,
+                    Gia: item.Gia,
+                    TongGia: item.Gia * item.SoLuong,
+                }));
+
                 try {
                     const response = await createPaymentLink({
                         checkoutInfo,
                         totalPrice,
                         maKH: id,
+                        cartList: cartList,
                     });
                     if (response && response.data && response.data.checkoutUrl) {
                         window.location.href = response.data.checkoutUrl;

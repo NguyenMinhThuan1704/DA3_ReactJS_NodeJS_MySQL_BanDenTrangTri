@@ -3,16 +3,16 @@
     "username": "thuan123",
     "password": "thuan123",
     "database": "thuan123",
-    "host": "160.191.244.41",   
+    "host": "db",   
     "dialect": "mysql",
     "logging": false,
     "timezone": "+07:00"
   },
   "test": {
-    "username": "thuan123",
-    "password": "thuan123",
-    "database": "thuan123",
-    "host": "160.191.244.41",
+    "username": "root",
+    "password": null,
+    "database": "database_test",
+    "host": "db",
     "dialect": "mysql"
   },
   "production": {

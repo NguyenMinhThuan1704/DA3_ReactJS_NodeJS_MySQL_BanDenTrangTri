@@ -28,11 +28,22 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://pay.payos.vn"],
+    origin: [
+      "http://localhost:3000",
+      "https://pay.payos.vn",
+      "https://da-3-react-js-node-js-my-sql-ban-de.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,
   })
 );
+
+res.cookie("taikhoan", token, {
+  httpOnly: true,
+  secure: true,
+  sameSite: "none",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
 
 const YOUR_DOMAIN = "http://localhost:3000";
 
@@ -309,6 +320,66 @@ app.post("/api/images/analyze", upload.array("images"), async (req, res) => {
     return res.json({ features });
   } catch (err) {
     console.error("Internal server error:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/chatbot/ask", async (req, res) => {
+  try {
+    const { question } = req.body;
+    if (!question) {
+      return res.status(400).json({ error: "Thiếu nội dung câu hỏi!" });
+    }
+
+    let products = [];
+    try {
+      products = await db.sequelize.query(
+        `SELECT id, TenSanPham, MoTa, Gia, GiaGiam FROM sanphams 
+         WHERE TenSanPham LIKE ? OR MoTa LIKE ? LIMIT 8`,
+        {
+          replacements: [`%${question}%`, `%${question}%`],
+          type: db.sequelize.QueryTypes.SELECT,
+        }
+      );
+    } catch (e) {
+      console.error("Lỗi truy vấn sản phẩm chatbot:", e);
+    }
+
+    const productInfo = products
+      .map(
+        (p, i) =>
+          `Sản phẩm ${i + 1}:\n- Tên: ${
+            p.TenSanPham
+          }\n- Giá: ${p.Gia?.toLocaleString()}đ\n- Giá giảm: ${
+            p.GiaGiam?.toLocaleString() || "Không có"
+          }\n- Mô tả: ${p.MoTa || "Không có mô tả"}\n- Link: ${
+            process.env.FRONTEND_URL || "http://localhost:3000"
+          }/user/sanpham/${p.id}`
+      )
+      .join("\n\n");
+
+    const prompt = `
+Bạn là trợ lý AI bán hàng đèn trang trí. Dưới đây là thông tin các sản phẩm liên quan để bạn tham khảo:
+${productInfo || "Không có sản phẩm nào phù hợp."}
+
+Người dùng hỏi: "${question}"
+
+👉 Hãy trả lời như một nhân viên tư vấn thân thiện, gợi ý sản phẩm phù hợp, giải thích ngắn gọn, tự nhiên (có thể kèm đường link sản phẩm nếu cần).
+    `.trim();
+
+    const aiResp = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+
+    const answer =
+      aiResp.choices?.[0]?.message?.content?.trim() ||
+      "Xin lỗi, tôi chưa có thông tin để hỗ trợ bạn!";
+
+    res.json({ answer, products });
+  } catch (err) {
+    console.error("Internal server error (chatbot):", err);
     return res.status(500).json({ error: "Internal server error" });
   }
 });

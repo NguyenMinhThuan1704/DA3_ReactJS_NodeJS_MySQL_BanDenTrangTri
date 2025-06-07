@@ -34,7 +34,11 @@ const createTaiKhoan = async (data) => {
 };
 
 const login = async (data) => {
-    return await httpRequest.post('/taikhoans/login', data);
+    const res = await httpRequest.post('/taikhoans/login', data);
+    if (res.data && res.data.token) {
+        localStorage.setItem('taikhoan', res.data.token);
+    }
+    return res;
 };
 
 const logout = async () => {

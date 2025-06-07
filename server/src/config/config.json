@@ -1,18 +1,18 @@
 {
   "development": {
-    "username": "root",
-    "password": "root",
+    "username": "thuan123",
+    "password": "thuan123",
     "database": "thuan123",
-    "host": "localhost",   
+    "host": "160.191.244.41",   
     "dialect": "mysql",
     "logging": false,
     "timezone": "+07:00"
   },
   "test": {
-    "username": "root",
-    "password": null,
-    "database": "database_test",
-    "host": "db",
+    "username": "thuan123",
+    "password": "thuan123",
+    "database": "thuan123",
+    "host": "160.191.244.41",
     "dialect": "mysql"
   },
   "production": {

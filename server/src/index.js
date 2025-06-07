@@ -38,13 +38,6 @@ app.use(
   })
 );
 
-res.cookie("taikhoan", token, {
-  httpOnly: true,
-  secure: true,
-  sameSite: "none",
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
-
 const YOUR_DOMAIN = "http://localhost:3000";
 
 app.post("/payment-link", async (req, res) => {

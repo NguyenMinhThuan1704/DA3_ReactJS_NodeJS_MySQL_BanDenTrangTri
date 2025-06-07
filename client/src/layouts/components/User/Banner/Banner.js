@@ -113,7 +113,7 @@ function Banner() {
     const isUserLoggedIn = () => {
         const token = document.cookie.split(';').find((cookie) => cookie.trim().startsWith('token='));
         if (!token) {
-            localStorage.removeItem('taikhoan');
+            localStorage.removeItem('token');
             return false;
         }
         return true;
@@ -131,7 +131,7 @@ function Banner() {
         if (token) {
             const decodedToken = jwtDecode(token.split('=')[1]);
             const thongtin = decodedToken.data;
-            localStorage.setItem('taikhoan', JSON.stringify(thongtin));
+            localStorage.setItem('token', JSON.stringify(thongtin));
             return decodedToken;
         }
         return null;
@@ -150,7 +150,7 @@ function Banner() {
             case 'logout':
                 try {
                     await taikhoanService.logout();
-                    localStorage.removeItem('taikhoan');
+                    localStorage.removeItem('token');
                     navigate(config.routes.login);
                 } catch (err) {
                     console.error('Logout failed:', err);

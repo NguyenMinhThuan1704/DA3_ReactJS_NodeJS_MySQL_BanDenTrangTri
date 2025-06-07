@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "root",
-    "password": "170423",
-    "database": "banden",
-    "host": "127.0.0.1",
+    "username": "thuan123",
+    "password": "thuan123",
+    "database": "thuan123",
+    "host": "db",   
     "dialect": "mysql",
     "logging": false,
     "timezone": "+07:00"
@@ -12,14 +12,14 @@
     "username": "root",
     "password": null,
     "database": "database_test",
-    "host": "127.0.0.1",
+    "host": "db",
     "dialect": "mysql"
   },
   "production": {
     "username": "root",
     "password": null,
     "database": "database_production",
-    "host": "127.0.0.1",
+    "host": "db",
     "dialect": "mysql"
   }
 }

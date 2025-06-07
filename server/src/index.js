@@ -316,6 +316,6 @@ app.post("/api/images/analyze", upload.array("images"), async (req, res) => {
 routes(app);
 connect();
 
-app.listen(PORT, () =>
-  console.log(`Server listening on http://localhost:${PORT}`)
+app.listen(PORT, '0.0.0.0', () =>
+  console.log(`Server listening on http://0.0.0.0:${PORT}`)
 );

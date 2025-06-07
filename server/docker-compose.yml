@@ -2,11 +2,11 @@ version: '3.8'
 
 services:
   backend:
-    build: ./server
+    build: .
     ports:
       - "5000:3000"         # Map port 5000 của VPS ra port 3000 trong container
     env_file:
-      - ./server/.env
+      - .env
     depends_on:
       - db
 

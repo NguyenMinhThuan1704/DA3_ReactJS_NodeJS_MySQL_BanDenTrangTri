@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "thuan123",
-    "password": "thuan123",
+    "username": "root",
+    "password": "root",
     "database": "thuan123",
-    "host": "db",   
+    "host": "localhost",   
     "dialect": "mysql",
     "logging": false,
     "timezone": "+07:00"

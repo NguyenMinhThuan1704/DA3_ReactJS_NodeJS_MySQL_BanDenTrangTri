@@ -1,14 +1,13 @@
-version: '3.8'
-
 services:
   backend:
     build: .
     ports:
-      - "5000:3000"         # Map port 5000 của VPS ra port 3000 trong container
+      - "5000:3000"
     env_file:
       - .env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: mysql:8
@@ -21,6 +20,11 @@ services:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
 volumes:
   db_data:

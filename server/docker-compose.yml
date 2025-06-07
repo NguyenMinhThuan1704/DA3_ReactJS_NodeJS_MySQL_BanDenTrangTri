@@ -14,7 +14,7 @@ services:
     image: mysql:8
     environment:
       MYSQL_DATABASE: thuan123
-      MYSQL_USER: root
+      MYSQL_USER: thuan123
       MYSQL_PASSWORD: thuan123
       MYSQL_ROOT_PASSWORD: thuan123
     ports:

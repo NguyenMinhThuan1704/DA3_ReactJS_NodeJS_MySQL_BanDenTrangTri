@@ -111,12 +111,7 @@ function Banner() {
     // };
 
     const isUserLoggedIn = () => {
-        const token = document.cookie.split(';').find((cookie) => cookie.trim().startsWith('token='));
-        if (!token) {
-            localStorage.removeItem('token');
-            return false;
-        }
-        return true;
+        return !!localStorage.getItem('token');
     };
 
     // useEffect(() => {

@@ -32,6 +32,7 @@ app.use(
       "http://localhost:3000",
       "https://pay.payos.vn",
       "https://da-3-react-js-node-js-my-sql-ban-de.vercel.app",
+      "https://da-3-react-js-node-j-git-db4c23-thuan-nguyens-projects-d71ba3ba.vercel.app",
     ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     credentials: true,

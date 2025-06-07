@@ -20,7 +20,7 @@ const payos = new PayOS(
 );
 
 const PORT = process.env.PORT || 5000;
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));

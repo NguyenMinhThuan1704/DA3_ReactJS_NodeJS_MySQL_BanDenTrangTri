@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Item from './Item';
 import axios from 'axios';
 import { getFirstImage } from '../../getFirstImage';
+import httpRequest from '../../../utils/httpRequest';
 
 const cx = classNames.bind(styles);
 
@@ -14,7 +15,7 @@ function TinTuc() {
     const [listOfPosts, setListOfPosts] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/tintucs').then((response) => {
+        httpRequest.get('/tintucs').then((response) => {
             setListOfPosts(response.data.data);
         });
     }, []);

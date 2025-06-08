@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Item from '../TinTuc/Item';
 import axios from 'axios';
 import { getFirstImage } from '../../getFirstImage';
+import httpRequest from '../../../utils/httpRequest';
 
 const cx = classNames.bind(styles);
 
@@ -14,7 +15,7 @@ function DuAnThucHien() {
     const [listOfPosts, setListOfPosts] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/duanthuchiens').then((response) => {
+        httpRequest.get('/duanthuchiens').then((response) => {
             setListOfPosts(response.data.data);
         });
     }, []);

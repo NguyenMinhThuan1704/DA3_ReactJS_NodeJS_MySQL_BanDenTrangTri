@@ -9,13 +9,14 @@ import styles from './Header.module.scss';
 import config from '~/config';
 import axios from 'axios';
 import Category from './Category';
+import httpRequest from '../../../../utils/httpRequest';
 
 const cx = classNames.bind(styles);
 
 function Header() {
     const [loaisp, setLoaiSP] = useState([]);
     useEffect(() => {
-        axios.get('http://localhost:5000/loaisanphams').then((response) => {
+        httpRequest.get('/loaisanphams').then((response) => {
             setLoaiSP(response.data.data);
         });
     }, []);

@@ -10,13 +10,14 @@ import styles from './Home.module.scss';
 import axios from 'axios';
 import img from '~/assets/img';
 import { getFirstImage } from '../../getFirstImage';
+import httpRequest from '../../../utils/httpRequest';
 
 const cx = classNames.bind(styles);
 
 function Home() {
     const [denchums, setDenChums] = useState([]);
     useEffect(() => {
-        axios.get('http://localhost:5000/sanphams/cate/1').then((response) => {
+        httpRequest.get('/sanphams/cate/1').then((response) => {
             setDenChums(response.data.data);
         });
         console.log('BASE_URL_DEPLOY:', process.env.REACT_APP_BASE_URL_DEPLOY);
@@ -24,21 +25,21 @@ function Home() {
 
     const [denmams, setDenMams] = useState([]);
     useEffect(() => {
-        axios.get('http://localhost:5000/sanphams/cate/2').then((response) => {
+        httpRequest.get('/sanphams/cate/2').then((response) => {
             setDenMams(response.data.data);
         });
     }, []);
 
     const [denthas, setDenThas] = useState([]);
     useEffect(() => {
-        axios.get('http://localhost:5000/sanphams/cate/3').then((response) => {
+        httpRequest.get('/sanphams/cate/3').then((response) => {
             setDenThas(response.data.data);
         });
     }, []);
 
     const [newSP, setNewSP] = useState([]);
     useEffect(() => {
-        axios.post('http://localhost:5000/sanphams/callTKSP', { ChucNang: 4 }).then((response) => {
+        httpRequest.post('/sanphams/callTKSP', { ChucNang: 4 }).then((response) => {
             setNewSP(response.data.data);
         });
     }, []);

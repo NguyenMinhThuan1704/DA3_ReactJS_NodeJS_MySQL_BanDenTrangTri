@@ -13,11 +13,18 @@ const db = require("./models");
 const hoadonbanService = require("./services/hoadonbanService");
 const chitiethoadonbanService = require("./services/chitiethoadonbanService");
 const cartService = require("./services/cartService");
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+
 const payos = new PayOS(
   process.env.PAYOS_CLIENT_ID,
   process.env.PAYOS_SECRET_ID,
   process.env.PAYOS_SECRET_KEY
 );
+console.log("OPENAI_API_KEY:", process.env.OPENAI_API_KEY);
+console.log("Key path:", path.join(__dirname, "./server.key"));
+console.log("Cert path:", path.join(__dirname, "./server.cert"));
 
 const PORT = process.env.PORT || 5000;
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -40,7 +47,6 @@ app.use(
 );
 
 const YOUR_DOMAIN = "http://localhost:3000";
-
 app.post("/payment-link", async (req, res) => {
   try {
     const randomOrderCode = Math.floor(1000000000 + Math.random() * 9000000000);
@@ -381,6 +387,14 @@ Người dùng hỏi: "${question}"
 routes(app);
 connect();
 
-app.listen(PORT, () =>
-  console.log(`Server listening on http://localhost:${PORT}`)
-);
+const options = {
+  key: fs.readFileSync(path.join(__dirname, "server.key")),
+  cert: fs.readFileSync(path.join(__dirname, "server.cert")),
+};
+
+// app.listen(PORT, () =>
+//   console.log(`Server listening on http://localhost:${PORT}`)
+// );
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`Server running at https://localhost:${PORT}`);
+});

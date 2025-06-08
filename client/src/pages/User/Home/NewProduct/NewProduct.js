@@ -17,7 +17,7 @@ function NewProduct({ id, img, name, priceOld, priceNew, sale }) {
     };
     const navigate = useNavigate();
     const handleBuyNow = async () => {
-        const taikhoan = JSON.parse(localStorage.getItem('token'));
+        const taikhoan = JSON.parse(localStorage.getItem('userinfo'));
         if (!taikhoan) {
             console.error('No account information found in local storage.');
             toast.error('Bạn cần đăng nhập trước khi đặt hàng!', {

@@ -36,11 +36,13 @@ const createTaiKhoan = async (data) => {
 
 const login = async (data) => {
     const res = await httpRequest.post('/taikhoans/login', data);
-    const token = document.cookie.split(';').find((cookie) => cookie.trim().startsWith('token='));
+
+    const { token } = res.data;
     if (token) {
-        const decodedToken = jwtDecode(token.split('=')[1]);
-        const thongtin = decodedToken.data;
-        localStorage.setItem('token', JSON.stringify(thongtin));
+        localStorage.setItem('token', token);
+
+        const decodedToken = jwtDecode(token);
+        localStorage.setItem('userinfo', JSON.stringify(decodedToken.data));
     }
     return res;
 };

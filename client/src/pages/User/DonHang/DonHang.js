@@ -19,7 +19,7 @@ function DonHang() {
     const [chiTietHoaDons, setChiTietHoaDons] = useState([]);
     const [searchParams] = useSearchParams();
     const POLL_INTERVAL = 3000;
-    const taikhoan = JSON.parse(localStorage.getItem('token'));
+    const taikhoan = JSON.parse(localStorage.getItem('userinfo'));
     const id = taikhoan.id;
     const [reviews, setReviews] = useState({});
     const [reviewedProducts, setReviewedProducts] = useState({});

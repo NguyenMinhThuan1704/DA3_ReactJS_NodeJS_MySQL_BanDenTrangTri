@@ -49,6 +49,7 @@ const login = async (data) => {
 
 const logout = async () => {
     localStorage.removeItem('token');
+    localStorage.removeItem('userinfo');
     return await httpRequest.post('/taikhoans/logout');
 };
 

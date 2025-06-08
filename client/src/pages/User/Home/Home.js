@@ -19,6 +19,7 @@ function Home() {
         axios.get('http://localhost:5000/sanphams/cate/1').then((response) => {
             setDenChums(response.data.data);
         });
+        console.log('BASE_URL_DEPLOY:', process.env.REACT_APP_BASE_URL_DEPLOY);
     }, []);
 
     const [denmams, setDenMams] = useState([]);

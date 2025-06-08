@@ -25,7 +25,7 @@ function GioHang() {
     const [paymentMethod, setPaymentMethod] = useState('cash');
 
     const fetchData = () => {
-        const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+        const taikhoan = JSON.parse(localStorage.getItem('token'));
         const id = taikhoan.id;
         Promise.all([sanphamService.getSanPhamAll(), cartService.getCartByAcc({ id })])
             .then(([sanphamRes, cartRes]) => {
@@ -121,7 +121,7 @@ function GioHang() {
         }),
         onSubmit: async (values) => {
             if (paymentMethod === 'online') {
-                const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+                const taikhoan = JSON.parse(localStorage.getItem('token'));
                 const id = taikhoan.id;
                 const checkoutInfo = {
                     TenKH: values.TenKH,
@@ -154,7 +154,7 @@ function GioHang() {
                 return;
             }
 
-            const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+            const taikhoan = JSON.parse(localStorage.getItem('token'));
             const id = taikhoan.id;
             const hoaDonData = {
                 MaKH: id,

@@ -44,7 +44,7 @@ function SanPham() {
     }, [searchParams, setSearchParams]);
 
     const handleBuyNow = async () => {
-        const taikhoan = JSON.parse(localStorage.getItem('taikhoan'));
+        const taikhoan = JSON.parse(localStorage.getItem('token'));
         if (!taikhoan) {
             toast.warning('Bạn cần đăng nhập trước khi đặt hàng!', {
                 position: 'top-right',

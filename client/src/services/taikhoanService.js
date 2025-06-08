@@ -1,3 +1,4 @@
+import { jwtDecode } from 'jwt-decode';
 import httpRequest from '~/utils/httpRequest';
 
 const getTaiKhoan = async ({ page }) => {
@@ -35,8 +36,11 @@ const createTaiKhoan = async (data) => {
 
 const login = async (data) => {
     const res = await httpRequest.post('/taikhoans/login', data);
-    if (res.data && res.data.token) {
-        localStorage.setItem('token', res.data);
+    const token = document.cookie.split(';').find((cookie) => cookie.trim().startsWith('token='));
+    if (token) {
+        const decodedToken = jwtDecode(token.split('=')[1]);
+        const thongtin = decodedToken.data;
+        localStorage.setItem('token', JSON.stringify(thongtin));
     }
     return res;
 };
